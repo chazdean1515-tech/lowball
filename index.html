@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lowball</title>
+<style>
+  :root {
+    --blue: #006AFF;
+    --blue-dark: #0050c8;
+    --ink: #2a2a33;
+    --muted: #5c6770;
+    --line: #e4e6ea;
+    --bg: #f4f5f7;
+    --card: #fff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; color: var(--blue-dark); }
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  }
+  .top-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: grid;
+    grid-template-columns: auto minmax(180px, 1fr) auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .logo {
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: -0.04em;
+    color: var(--blue);
+    margin: 0;
+  }
+  .logo span { font-weight: 600; color: #8aa4c8; font-size: 13px; letter-spacing: 0; margin-left: 8px; }
+  .search {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #cfd4dc;
+    border-radius: 8px;
+    height: 44px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,106,255,.15); }
+  .search svg { flex: 0 0 auto; }
+  .search input {
+    border: 0;
+    outline: 0;
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: transparent;
+  }
+  nav { display: flex; gap: 8px; align-items: center; }
+  nav a {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+  nav a:hover { background: #f3f6fb; text-decoration: none; color: var(--blue); }
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 18px 20px 48px;
+  }
+  .results-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .results-head h2 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+  .count { color: var(--muted); font-weight: 500; font-size: 16px; }
+  .sort {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .sort select {
+    font: inherit;
+    color: var(--ink);
+    border: 1px solid #cfd4dc;
+    background: #fff;
+    border-radius: 8px;
+    height: 40px;
+    padding: 0 12px;
+  }
+  .sort select:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+  .disclaimer {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: start;
+  }
+  .card {
+    display: grid;
+    grid-template-columns: 40px 148px minmax(0, 1fr);
+    gap: 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 16px 14px;
+    margin: 0 0 12px;
+  }
+  .rank {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .ph {
+    background: #e6e9ee;
+    min-height: 112px;
+    border-radius: 6px;
+    color: #7b8692;
+    font-size: 12px;
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .addr {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .pill {
+    flex: 0 0 auto;
+    background: #e8f1ff;
+    color: var(--blue);
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 14px;
+    letter-spacing: -0.02em;
+  }
+  .price {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-top: 4px;
+  }
+  .facts { color: var(--ink); font-size: 14px; margin-top: 2px; }
+  .cutline {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #3c4650;
+  }
+  .reasons {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    color: #6b7280;
+    font-size: 13px;
+  }
+  .reasons li { margin: 0 0 4px; }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .status {
+    font-weight: 700;
+    color: #0b7a43;
+  }
+  .st-pend { color: #9a6700; }
+  .st-unk { color: #5c6770; }
+  .src { color: var(--muted); }
+  .view { font-weight: 700; }
+  .rail {
+    position: sticky;
+    top: 84px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .rail h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+  }
+  .standin {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .mapbox {
+    background: #f7f9fc;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  .mapbox svg { width: 100%; height: auto; display: block; }
+  .cities {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 280px;
+    overflow: auto;
+  }
+  .cities li {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-top: 1px solid #f0f1f4;
+    font-size: 14px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+  .ccount { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .rules {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .rules h3 { margin: 0 0 6px; color: var(--ink); font-size: 14px; }
+  .rules ol { margin: 0; padding-left: 18px; }
+  .rules li { margin: 0 0 4px; }
+  .empty {
+    display: none;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 24px;
+    color: var(--muted);
+  }
+  @media (max-width: 860px) {
+    .top-inner { grid-template-columns: 1fr; gap: 10px; }
+    .layout { grid-template-columns: 1fr; }
+    .rail { position: static; }
+    .card { grid-template-columns: 36px 1fr; }
+    .ph { display: none; }
+    .results-head { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <p class="logo">Lowball <span>Florida</span></p>
+    <form class="search" role="search" action="#" onsubmit="return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#5c6770" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <label class="sr" for="q" style="position:absolute;left:-9999px">Search Florida listings</label>
+      <input id="q" type="search" value="Florida" aria-label="Search Florida listings">
+    </form>
+    <nav>
+      <a href="#" id="buy">Buy</a>
+      <a href="#score">Score</a>
+    </nav>
+  </div>
+</header>
+<main class="page">
+  <div class="results-head">
+    <h2>Florida homes <span class="count" id="count">24</span></h2>
+    <label class="sort">Sort
+      <select id="sort" aria-label="Sort listings">
+        <option value="score" selected>Lowball score</option>
+        <option value="cut">Price cut</option>
+        <option value="dom">Days on market</option>
+      </select>
+    </label>
+  </div>
+  <p class="disclaimer">Fetched Saturday, Oct 3, 2026 (America/New_York). Numbers are from public listings at fetch time, not a live feed. This file is a local sketch. It is not a published site.</p>
+  <div class="layout">
+    <section id="list" aria-label="Listings">
+      
+<article class="card" data-score="84.6" data-cut="7.6" data-dom="177.0" data-city="Eustis" data-address="Lake Seneca Rd, Eustis, FL 32726">
+  <div class="rank" aria-label="Rank">1</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Eustis/Lake-Seneca-Rd-32726/home/45788381">Lake Seneca Rd, Eustis, FL 32726</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">84.6</div>
+    </div>
+    <div class="price">$549,500</div>
+    <div class="facts">Land · 12 acres</div>
+    <div class="cutline">Latest cut $45,500 (7.6%) · 3 cuts · first ask $615,000 · 177 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is 7.6%, from $595,000 to $549,500 on Sep 23, 2026. +17.6 of 25.</li><li>Three cuts on this listing ($615,000, $605,000, $595,000, then $549,500). +15.0 of 15.</li><li>177 days on Redfin. +10.0 of 10.</li><li>Down from the Apr 7, 2026 ask of $615,000. That is 10.7% off the original ask. +10.0 of 10.</li><li>Removed Aug 7, 2026 and relisted Aug 8 on the same listing. +12.</li><li>Relisted Sep 23, 2026 at $549,500, under the prior $595,000 ask. +8.</li><li>Went contingent Sep 4, 2026, then was relisted Sep 23. +12.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS O6396951</span>
+      <a class="view" href="https://www.redfin.com/FL/Eustis/Lake-Seneca-Rd-32726/home/45788381">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="68.2" data-cut="2.2" data-dom="106.0" data-city="Stuart" data-address="412 SW Akron Ave, Stuart, FL 34994">
+  <div class="rank" aria-label="Rank">2</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Stuart/412-SW-Akron-Ave-34994/home/109269921">412 SW Akron Ave, Stuart, FL 34994</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">68.2</div>
+    </div>
+    <div class="price">$1,100,000</div>
+    <div class="facts">4 bd · 3 ba · 2,015 sq ft</div>
+    <div class="cutline">Latest cut $25,000 (2.2%) · 2 cuts · first ask $1,200,000 · 106 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $1,125,000 to $1,100,000 on Sep 24, 2026. +5.1 of 25.</li><li>Two cuts on this listing. The June rise from $1,200,000 to $1,225,000 is not a cut. +10.0 of 15.</li><li>106 days on market. +8.8 of 10.</li><li>Down from this listing&#x27;s first ask of $1,200,000 (it had risen to $1,225,000 in between). That is 8.3% off the original ask. +8.3 of 10.</li><li>Prior listing removed Mar 13, 2026, then this listing started Jun 16. +12.</li><li>Came back at $1,200,000, under the prior listing&#x27;s $1,250,000 ask. +8.</li><li>Pending and contingent more than once in September 2026, then relisted each time. +12.</li><li>Remarks say &quot;REDUCED $100,000.&quot; +4.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS M20056036</span>
+      <a class="view" href="https://www.redfin.com/FL/Stuart/412-SW-Akron-Ave-34994/home/109269921">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="65.4" data-cut="14.3" data-dom="65.0" data-city="Winter Haven" data-address="640 Avenue I NW, Winter Haven, FL 33881">
+  <div class="rank" aria-label="Rank">3</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Winter-Haven/640-Avenue-I-NW-33881/home/46196919">640 Avenue I NW, Winter Haven, FL 33881</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">65.4</div>
+    </div>
+    <div class="price">$300,000</div>
+    <div class="facts">4 bd · 2 ba · 3,753 sq ft</div>
+    <div class="cutline">Latest cut $50,000 (14.3%) · 1 cut · first ask $350,000 · 65 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $350,000 to $300,000 on Sep 21, 2026. +25.0 of 25.</li><li>One cut on this listing. +5.0 of 15.</li><li>65 days on Redfin. +5.4 of 10.</li><li>Down from the Jul 29, 2026 ask of $350,000. That is 14.3% off the original ask. +10.0 of 10.</li><li>Contingent Aug 4, 2026, then relisted Sep 21. +12.</li><li>Relisted the same day at $300,000, under the $350,000 ask. +8.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS P4939442</span>
+      <a class="view" href="https://www.redfin.com/FL/Winter-Haven/640-Avenue-I-NW-33881/home/46196919">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="59.5" data-cut="3.2" data-dom="191.0" data-city="Beverly Hills" data-address="6 Donna St, Beverly Hills, FL 34465">
+  <div class="rank" aria-label="Rank">4</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Beverly-Hills/6-Donna-St-34465/home/127999940">6 Donna St, Beverly Hills, FL 34465</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">59.5</div>
+    </div>
+    <div class="price">$150,000</div>
+    <div class="facts">1 bd · 1 ba · 939 sq ft</div>
+    <div class="cutline">Latest cut $5,000 (3.2%) · 3 cuts · first ask $165,000 · 191 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $155,000 to $150,000 on Jun 8, 2026. The Sep 24 relist did not change the price. +7.4 of 25.</li><li>Three cuts on this listing ($165,000 to $159,000, $155,000, then $150,000). +15.0 of 15.</li><li>191 days on Redfin. +10.0 of 10.</li><li>Down from the Mar 24, 2026 ask of $165,000. That is 9.1% off the original ask. +9.1 of 10.</li><li>Delisted and relisted the same day, Sep 24, 2026. +12.</li><li>List price is under the Jun 13, 2023 sale of $172,900. +6.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS 853400</span>
+      <a class="view" href="https://www.redfin.com/FL/Beverly-Hills/6-Donna-St-34465/home/127999940">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="54.8" data-cut="1.2" data-dom="91.0" data-city="Homestead" data-address="826 SE 17th St, Homestead, FL 33034">
+  <div class="rank" aria-label="Rank">5</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Homestead/826-SE-17th-St-33034/home/118780774">826 SE 17th St, Homestead, FL 33034</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">54.8</div>
+    </div>
+    <div class="price">$415,000</div>
+    <div class="facts">4 bd · 3 ba · 1,757 sq ft</div>
+    <div class="cutline">Latest cut $4,900 (1.2%) · 3 cuts · first ask $429,900 · 91 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $419,900 to $415,000 on Sep 23, 2026. +2.7 of 25.</li><li>Three cuts on this listing. Redfin also prints &quot;3 price drops.&quot; +15.0 of 15.</li><li>91 days on market. +7.6 of 10.</li><li>Down from this listing&#x27;s Jul 5, 2026 ask of $429,900. That is 3.5% off the original ask. +3.5 of 10.</li><li>Earlier listing removed Jul 1, 2026, then this one started Jul 5. +12.</li><li>Came back at $429,900, under the prior $435,000 ask. +8.</li><li>List price is under the Oct 25, 2022 sale of $475,000. The 2025 assessment ($387,600) is below the list price, so that half of the rule does not apply. +6.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS A12048174</span>
+      <a class="view" href="https://www.redfin.com/FL/Homestead/826-SE-17th-St-33034/home/118780774">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="54.5" data-cut="6.5" data-dom="146.0" data-city="Davie" data-address="9410 Live Oak Pl #103, Davie, FL 33324">
+  <div class="rank" aria-label="Rank">6</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Davie/9410-Live-Oak-Pl-33324/unit-103/home/41764951">9410 Live Oak Pl #103, Davie, FL 33324</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">54.5</div>
+    </div>
+    <div class="price">$215,000</div>
+    <div class="facts">2 bd · 2 ba · 965 sq ft</div>
+    <div class="cutline">Latest cut $15,000 (6.5%) · 1 cut · first ask $230,000 · 146 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $230,000 to $215,000 on Sep 25, 2026. +15.0 of 25.</li><li>One cut on this listing. The new ask matched the old $230,000, so it was not relisted lower. +5.0 of 15.</li><li>146 days on market. +10.0 of 10.</li><li>Down from the May 11, 2026 ask of $230,000. That is 6.5% off the original ask. +6.5 of 10.</li><li>Prior listing removed May 8, 2026, then this one started May 11. +12.</li><li>List price is under the Dec 6, 2023 sale of $220,000. The 2025 assessment ($205,220) is below the list price, so only the sale counts. +6.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS A12016620</span>
+      <a class="view" href="https://www.redfin.com/FL/Davie/9410-Live-Oak-Pl-33324/unit-103/home/41764951">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="52.7" data-cut="6.0" data-dom="149.0" data-city="Wesley Chapel" data-address="4027 Langdrum Dr, Wesley Chapel, FL 33543">
+  <div class="rank" aria-label="Rank">7</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Wesley-Chapel/4027-Langdrum-Dr-33543/home/48273390">4027 Langdrum Dr, Wesley Chapel, FL 33543</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">52.7</div>
+    </div>
+    <div class="price">$299,000</div>
+    <div class="facts">3 bd · 2 ba · 1,614 sq ft</div>
+    <div class="cutline">Latest cut $19,000 (6.0%) · 5 cuts · first ask $375,000 · 149 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $318,000 to $299,000 on Sep 19, 2026. It went pending Sep 28. +13.7 of 25.</li><li>Five cuts on this listing. The cut-count bucket stops at 15 points. +15.0 of 15.</li><li>149 days on Redfin. +10.0 of 10.</li><li>Down from the May 2, 2026 ask of $375,000. That is 20.3% off the original ask. +10.0 of 10.</li><li>Remarks say &quot;SIGNIFICANT PRICE REDUCTION!&quot; +4.</li><li>Listing header says 1,614 sq ft. The remarks say 1,622.</li></ul>
+    <div class="meta">
+      <span class="status st-pend">Pending</span>
+      <span class="src">Redfin · MLS TB8502125</span>
+      <a class="view" href="https://www.redfin.com/FL/Wesley-Chapel/4027-Langdrum-Dr-33543/home/48273390">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="51.8" data-cut="2.2" data-dom="101.0" data-city="New Port Richey" data-address="8310 Liman Dr, New Port Richey, FL 34653">
+  <div class="rank" aria-label="Rank">8</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/New-Port-Richey/8310-Liman-Dr-34653/home/48413687">8310 Liman Dr, New Port Richey, FL 34653</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">51.8</div>
+    </div>
+    <div class="price">$440,000</div>
+    <div class="facts">3 bd · 2 ba · 1,920 sq ft</div>
+    <div class="cutline">Latest cut $9,900 (2.2%) · 3 cuts · first ask $474,900 · 101 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $449,900 to $440,000 on Sep 28, 2026. +5.1 of 25.</li><li>Three cuts on this listing ($474,900, $460,000, $449,900, then $440,000). +15.0 of 15.</li><li>101 days on Redfin. +8.4 of 10.</li><li>Down from the Jun 7, 2026 ask of $474,900. That is 7.3% off the original ask. +7.3 of 10.</li><li>History marks Relisted on Aug 25, 2026. That line has no price, so the extra &quot;relisted lower&quot; points are not added. +12.</li><li>Remarks say &quot;$25k Price Drop!&quot; +4.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS TB8516652</span>
+      <a class="view" href="https://www.redfin.com/FL/New-Port-Richey/8310-Liman-Dr-34653/home/48413687">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="50.0" data-cut="1.6" data-dom="116.0" data-city="Land O Lakes" data-address="4535 Winding River Way, Land O Lakes, FL 34639">
+  <div class="rank" aria-label="Rank">9</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Land-O-Lakes/4535-Winding-River-Way-34639/home/48260143">4535 Winding River Way, Land O Lakes, FL 34639</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">50.0</div>
+    </div>
+    <div class="price">$250,000</div>
+    <div class="facts">3 bd · 2.5 ba · 1,536 sq ft</div>
+    <div class="cutline">Latest cut $4,000 (1.6%) · 4 cuts · first ask $265,000 · 116 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $254,000 to $250,000 on Aug 15, 2026. +3.6 of 25.</li><li>Four cuts on this listing. The cut-count bucket stops at 15 points. +15.0 of 15.</li><li>116 days on Redfin. +9.7 of 10.</li><li>Down from the first shown ask on this listing, $265,000 on Jun 8, 2026. That is 5.7% off the original ask. +5.7 of 10.</li><li>A prior listing was removed Nov 7, 2025. This listing&#x27;s first shown ask is Jun 8, 2026. No price is printed on the removed listing, so it is not scored as relisted lower. +12.</li><li>Remarks say &quot;PRICE REDUCED for QUICK SALE!&quot; and &quot;SELLER MOTIVATED!&quot; +4.</li><li>Listing header says 1,536 sq ft. The remarks say about 1,600.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS TB8516969</span>
+      <a class="view" href="https://www.redfin.com/FL/Land-O-Lakes/4535-Winding-River-Way-34639/home/48260143">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="46.8" data-cut="6.0" data-dom="24.0" data-city="Miami" data-address="2375 NE 185th St, Miami, FL 33180">
+  <div class="rank" aria-label="Rank">10</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Miami/2375-NE-185th-St-33180/home/43004036">2375 NE 185th St, Miami, FL 33180</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">46.8</div>
+    </div>
+    <div class="price">$799,000</div>
+    <div class="facts">4 bd · 3 ba · 1,556 sq ft</div>
+    <div class="cutline">Latest cut $51,000 (6.0%) · 1 cut · first ask $850,000 · 24 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $850,000 to $799,000 on Sep 22, 2026. +13.8 of 25.</li><li>One cut on this listing. +5.0 of 15.</li><li>24 days on market. +2.0 of 10.</li><li>Down from this listing&#x27;s Sep 10, 2026 ask of $850,000. That is 6.0% off the original ask. +6.0 of 10.</li><li>Prior listing removed Sep 9, 2026, then this one started Sep 10. +12.</li><li>Came back at $850,000, under the prior $860,000 ask. +8.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS A12086864</span>
+      <a class="view" href="https://www.redfin.com/FL/Miami/2375-NE-185th-St-33180/home/43004036">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="41.1" data-cut="0.1" data-dom="220.0" data-city="Orange Park" data-address="785 Oakleaf Plantation Pkwy #1333, Orange Park, FL 32065">
+  <div class="rank" aria-label="Rank">11</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Orange-Park/785-Oakleaf-Plantation-Pkwy-32065/unit-1333/home/62470045">785 Oakleaf Plantation Pkwy #1333, Orange Park, FL 32065</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">41.1</div>
+    </div>
+    <div class="price">$169,700</div>
+    <div class="facts">3 bd · 2 ba · 1,521 sq ft</div>
+    <div class="cutline">Latest cut $100 (0.1%) · 8 cuts · first ask $190,000 · 220 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $169,800 to $169,700 on Aug 8, 2026. It went contingent Sep 10. +0.1 of 25.</li><li>Eight cuts on this listing. Redfin prints &quot;8 price drops.&quot; The cut-count bucket stops at 15 points. +15.0 of 15.</li><li>220 days on market. +10.0 of 10.</li><li>Down from the Feb 25, 2026 ask of $190,000. That is 10.7% off the original ask. +10.0 of 10.</li><li>List price is under the Apr 12, 2022 sale of $255,000. +6.</li></ul>
+    <div class="meta">
+      <span class="status st-pend">Contingent</span>
+      <span class="src">Redfin · MLS 2131535</span>
+      <a class="view" href="https://www.redfin.com/FL/Orange-Park/785-Oakleaf-Plantation-Pkwy-32065/unit-1333/home/62470045">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="40.3" data-cut="6.9" data-dom="-1" data-city="Ellenton" data-address="6103 25th St E, Ellenton, FL 34222">
+  <div class="rank" aria-label="Rank">12</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Ellenton/6103-25th-St-E-34222/home/45920243">6103 25th St E, Ellenton, FL 34222</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">40.3</div>
+    </div>
+    <div class="price">$325,000</div>
+    <div class="facts">3 bd · 2 ba · 1,670 sq ft</div>
+    <div class="cutline">Latest cut $24,000 (6.9%) · 2 cuts · first ask $355,000 · days on market not shown</div>
+    <ul class="reasons"><li>Latest cut is from $349,000 to $325,000 on Sep 22, 2026. +15.8 of 25.</li><li>Two cuts on this listing. +10.0 of 15.</li><li>Days on market were not printed on the page, so that bucket is 0.</li><li>Down from the Jul 10, 2026 ask of $355,000. That is 8.5% off the original ask. +8.5 of 10.</li><li>List price is under the 2025 tax assessment of $332,880 and under the Jan 19, 2022 sale of $370,000. +6.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS TB8527964</span>
+      <a class="view" href="https://www.redfin.com/FL/Ellenton/6103-25th-St-E-34222/home/45920243">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="36.5" data-cut="5.0" data-dom="-1" data-city="Winter Haven" data-address="265 Lake Thomas Dr, Winter Haven, FL 33880">
+  <div class="rank" aria-label="Rank">13</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Winter-Haven/265-Lake-Thomas-Dr-33880/home/46264591">265 Lake Thomas Dr, Winter Haven, FL 33880</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">36.5</div>
+    </div>
+    <div class="price">$284,950</div>
+    <div class="facts">3 bd · 2 ba · 1,517 sq ft</div>
+    <div class="cutline">Latest cut $15,000 (5.0%) · 6 cuts · first ask $359,950 · days on market not shown</div>
+    <ul class="reasons"><li>Latest cut is from $299,950 to $284,950 on Sep 29, 2026. +11.5 of 25.</li><li>Six cuts on this listing. The cut-count bucket stops at 15 points. +15.0 of 15.</li><li>Days on market were not printed on the page, so that bucket is 0.</li><li>Down from the Feb 24, 2026 ask of $359,950. That is 20.8% off the original ask. +10.0 of 10.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS L4959685</span>
+      <a class="view" href="https://www.redfin.com/FL/Winter-Haven/265-Lake-Thomas-Dr-33880/home/46264591">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="34.9" data-cut="3.5" data-dom="136.0" data-city="Davenport" data-address="556 Bonville Dr, Davenport, FL 33897">
+  <div class="rank" aria-label="Rank">14</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Davenport/556-Bonville-Dr-33897/home/46303785">556 Bonville Dr, Davenport, FL 33897</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">34.9</div>
+    </div>
+    <div class="price">$410,000</div>
+    <div class="facts">4 bd · 2 ba · 2,085 sq ft</div>
+    <div class="cutline">Latest cut $15,000 (3.5%) · 2 cuts · first ask $440,000 · 136 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $425,000 to $410,000 on Sep 25, 2026. +8.1 of 25.</li><li>Two cuts on this listing. +10.0 of 15.</li><li>136 days on Redfin. +10.0 of 10.</li><li>Down from the May 20, 2026 ask of $440,000. That is 6.8% off the original ask. +6.8 of 10.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS O6409128</span>
+      <a class="view" href="https://www.redfin.com/FL/Davenport/556-Bonville-Dr-33897/home/46303785">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="33.4" data-cut="1.3" data-dom="44.0" data-city="Homestead" data-address="13837 SW 273rd Ter, Homestead, FL 33032">
+  <div class="rank" aria-label="Rank">15</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Homestead/13837-SW-273rd-Ter-33032/home/43292828">13837 SW 273rd Ter, Homestead, FL 33032</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">33.4</div>
+    </div>
+    <div class="price">$394,999</div>
+    <div class="facts">3 bd · 2 ba · 1,235 sq ft</div>
+    <div class="cutline">Latest cut $5,000 (1.3%) · 2 cuts · first ask $415,000 · 44 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $399,999 to $394,999 on Sep 26, 2026. +2.9 of 25.</li><li>Two cuts on this listing. +10.0 of 15.</li><li>44 days on market. +3.7 of 10.</li><li>Down from this listing&#x27;s Aug 21, 2026 ask of $415,000. That is 4.8% off the original ask. +4.8 of 10.</li><li>A listing at $415,000 was removed Aug 13, 2026, then this one started Aug 21 at the same $415,000. Not lower, so the extra relist points are not added. +12.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS A12075565</span>
+      <a class="view" href="https://www.redfin.com/FL/Homestead/13837-SW-273rd-Ter-33032/home/43292828">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="29.1" data-cut="2.6" data-dom="76.0" data-city="Pompano Beach" data-address="3209 Leigh Rd, Pompano Beach, FL 33062">
+  <div class="rank" aria-label="Rank">16</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Pompano-Beach/3209-Leigh-Rd-33062/home/59200976">3209 Leigh Rd, Pompano Beach, FL 33062</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">29.1</div>
+    </div>
+    <div class="price">$1,849,000</div>
+    <div class="facts">3 bd · 4 ba · 2,132 sq ft</div>
+    <div class="cutline">Latest cut $49,000 (2.6%) · 2 cuts · first ask $1,985,000 · 76 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $1,898,000 to $1,849,000 on Sep 29, 2026. +5.9 of 25.</li><li>Two cuts on this listing. +10.0 of 15.</li><li>76 days on market. +6.3 of 10.</li><li>Down from the Jul 20, 2026 ask of $1,985,000. That is 6.9% off the original ask. +6.9 of 10.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS B26054206</span>
+      <a class="view" href="https://www.redfin.com/FL/Pompano-Beach/3209-Leigh-Rd-33062/home/59200976">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="26.5" data-cut="1.5" data-dom="60.0" data-city="Miramar Beach" data-address="40 Antilles Cv, Miramar Beach, FL 32550">
+  <div class="rank" aria-label="Rank">17</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Miramar-Beach/40-Antilles-Cv-32550/home/139524687">40 Antilles Cv, Miramar Beach, FL 32550</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">26.5</div>
+    </div>
+    <div class="price">$485,000</div>
+    <div class="facts">3 bd · 2 ba · 1,675 sq ft</div>
+    <div class="cutline">Latest cut $7,500 (1.5%) · 2 cuts · first ask $495,000 · 60 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $492,500 to $485,000 on Sep 29, 2026. +3.5 of 25.</li><li>Two cuts on this listing. An older MLS number is on the page, but it does not show a removal, so those earlier cuts are not counted here. +10.0 of 15.</li><li>60 days on market. +5.0 of 10.</li><li>Down from this listing&#x27;s Aug 4, 2026 ask of $495,000. That is 2.0% off the original ask. +2.0 of 10.</li><li>List price is under the Sep 29, 2023 sale of $510,000. The 2025 assessment ($332,216) is below the list price. +6.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS 1009207</span>
+      <a class="view" href="https://www.redfin.com/FL/Miramar-Beach/40-Antilles-Cv-32550/home/139524687">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="24.4" data-cut="1.7" data-dom="51.0" data-city="Gainesville" data-address="4039 NW 23rd Cir, Gainesville, FL 32605">
+  <div class="rank" aria-label="Rank">18</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Gainesville/4039-NW-23rd-Cir-32605/home/115288577">4039 NW 23rd Cir, Gainesville, FL 32605</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">24.4</div>
+    </div>
+    <div class="price">$295,000</div>
+    <div class="facts">3 bd · 2 ba · 1,492 sq ft</div>
+    <div class="cutline">Latest cut $5,000 (1.7%) · 2 cuts · first ask $315,000 · 51 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $300,000 to $295,000 on Sep 23, 2026. +3.8 of 25.</li><li>Two cuts on this listing. +10.0 of 15.</li><li>51 days on Redfin. +4.3 of 10.</li><li>Down from the Aug 13, 2026 ask of $315,000. That is 6.3% off the original ask. +6.3 of 10.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS GC542681</span>
+      <a class="view" href="https://www.redfin.com/FL/Gainesville/4039-NW-23rd-Cir-32605/home/115288577">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="22.0" data-cut="0.0" data-dom="170.0" data-city="Sarasota" data-address="4003 Booth Pl, Sarasota, FL 34231">
+  <div class="rank" aria-label="Rank">19</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.zillow.com/homedetails/4003-Booth-Pl-Sarasota-FL-34231/47502200_zpid/">4003 Booth Pl, Sarasota, FL 34231</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">22.0</div>
+    </div>
+    <div class="price">$334,900</div>
+    <div class="facts">3 bd · 2 ba · 1,306 sq ft</div>
+    <div class="cutline">No price cut shown on the fetched page · 170 days on Zillow</div>
+    <ul class="reasons"><li>170 days on Zillow. +10.0 of 10.</li><li>Remarks say &quot;Back on the Market.&quot; The fetched page does not show a price history, so cut and relist-lower points are not added. +12.</li></ul>
+    <div class="meta">
+      <span class="status st-pend">Under contract, accepting backups</span>
+      <span class="src">Zillow · MLS A4690238</span>
+      <a class="view" href="https://www.zillow.com/homedetails/4003-Booth-Pl-Sarasota-FL-34231/47502200_zpid/">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="20.6" data-cut="3.8" data-dom="36.0" data-city="Lutz" data-address="111 Oak Lee Dr, Lutz, FL 33548">
+  <div class="rank" aria-label="Rank">20</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Lutz/111-Oak-Lee-Dr-33548/home/47104695">111 Oak Lee Dr, Lutz, FL 33548</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">20.6</div>
+    </div>
+    <div class="price">$499,900</div>
+    <div class="facts">3 bd · 2 ba · 1,386 sq ft</div>
+    <div class="cutline">Latest cut $20,000 (3.8%) · 1 cut · first ask $519,900 · 36 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $519,900 to $499,900 on Sep 24, 2026. +8.8 of 25.</li><li>One cut on this listing. +5.0 of 15.</li><li>36 days on Redfin. +3.0 of 10.</li><li>Down from the Aug 27, 2026 ask of $519,900. That is 3.8% off the original ask. +3.8 of 10.</li><li>Listing header says 2 baths. The remarks say 3 baths.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS TB8543280</span>
+      <a class="view" href="https://www.redfin.com/FL/Lutz/111-Oak-Lee-Dr-33548/home/47104695">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="20.2" data-cut="3.8" data-dom="32.0" data-city="Boca Raton" data-address="764 NE 33rd St, Boca Raton, FL 33431">
+  <div class="rank" aria-label="Rank">21</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Boca-Raton/764-NE-33rd-St-33431/home/42312503">764 NE 33rd St, Boca Raton, FL 33431</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">20.2</div>
+    </div>
+    <div class="price">$6,975,000</div>
+    <div class="facts">5 bd · 6.5 ba · 4,856 sq ft</div>
+    <div class="cutline">Latest cut $275,000 (3.8%) · 1 cut · first ask $7,250,000 · 32 days on Redfin</div>
+    <ul class="reasons"><li>Latest cut is from $7,250,000 to $6,975,000 on Sep 23, 2026. +8.7 of 25.</li><li>One cut on this listing. Older relist lines are from a 2020 sale, not this listing. +5.0 of 15.</li><li>32 days on Redfin. +2.7 of 10.</li><li>Down from the Aug 31, 2026 ask of $7,250,000. That is 3.8% off the original ask. +3.8 of 10.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS B26070713</span>
+      <a class="view" href="https://www.redfin.com/FL/Boca-Raton/764-NE-33rd-St-33431/home/42312503">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="14.0" data-cut="0.0" data-dom="161.0" data-city="Ponte Vedra Beach" data-address="45 Lake Julia Dr S, Ponte Vedra Beach, FL 32082">
+  <div class="rank" aria-label="Rank">22</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.zillow.com/homedetails/45-Lake-Julia-Dr-S-Ponte-Vedra-Beach-FL-32082/47751723_zpid/">45 Lake Julia Dr S, Ponte Vedra Beach, FL 32082</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">14.0</div>
+    </div>
+    <div class="price">$799,999</div>
+    <div class="facts">3 bd · 3 ba · 1,883 sq ft</div>
+    <div class="cutline">No price cut shown on the fetched page · 161 days on Zillow</div>
+    <ul class="reasons"><li>161 days on Zillow. +10.0 of 10.</li><li>Remarks say &quot;priced to SELL.&quot; The fetched page does not show a price cut or an original ask. +4.</li></ul>
+    <div class="meta">
+      <span class="status st-unk">Listed — status word not on the fetched page</span>
+      <span class="src">Zillow · MLS 2141970</span>
+      <a class="view" href="https://www.zillow.com/homedetails/45-Lake-Julia-Dr-S-Ponte-Vedra-Beach-FL-32082/47751723_zpid/">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="12.1" data-cut="0.0" data-dom="1.2083333333333333" data-city="Frostproof" data-address="10 Fort Clinch Heights Rd, Frostproof, FL 33843">
+  <div class="rank" aria-label="Rank">23</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Frostproof/10-Ft-Clinch-Heights-Rd-33843/home/46244156">10 Fort Clinch Heights Rd, Frostproof, FL 33843</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">12.1</div>
+    </div>
+    <div class="price">$390,000</div>
+    <div class="facts">3 bd · 2.5 ba · 1,663 sq ft</div>
+    <div class="cutline">No price cut shown on the fetched page · 29 hours on Redfin</div>
+    <ul class="reasons"><li>29 hours on Redfin. +0.1 of 10.</li><li>A listing was removed Sep 22, 2026. This one was listed Sep 29 and again Oct 2 at $390,000. The removed listing&#x27;s last ask is not printed, so it is not scored as relisted lower. +12.</li><li>Current listing has no price cut. An older MLS line shows $405,000 and $434,900, but that price is not tied to the removed listing&#x27;s last ask on the page.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS K4903823</span>
+      <a class="view" href="https://www.redfin.com/FL/Frostproof/10-Ft-Clinch-Heights-Rd-33843/home/46244156">View listing</a>
+    </div>
+  </div>
+</article>
+<article class="card" data-score="8.3" data-cut="0.4" data-dom="24.0" data-city="Saint Johns" data-address="94 Stone Creek Cir, Saint Johns, FL 32259">
+  <div class="rank" aria-label="Rank">24</div>
+  <div class="ph" aria-hidden="true"><span>No photo<br>in the fetch</span></div>
+  <div class="body">
+    <div class="row">
+      <h3 class="addr"><a href="https://www.redfin.com/FL/Saint-Johns/94-Stone-Creek-Cir-32259/home/103524680">94 Stone Creek Cir, Saint Johns, FL 32259</a></h3>
+      <div class="pill" title="Lowball score, capped at 100">8.3</div>
+    </div>
+    <div class="price">$757,000</div>
+    <div class="facts">4 bd · 3 ba · 3,366 sq ft</div>
+    <div class="cutline">Latest cut $3,000 (0.4%) · 1 cut · first ask $760,000 · 24 days on market</div>
+    <ul class="reasons"><li>Latest cut is from $760,000 to $757,000 on Oct 1, 2026. +0.9 of 25.</li><li>One cut on this listing. Redfin prints &quot;1 price drop.&quot; +5.0 of 15.</li><li>24 days on market. +2.0 of 10.</li><li>Down from the Sep 10, 2026 ask of $760,000. That is 0.4% off the original ask. +0.4 of 10.</li></ul>
+    <div class="meta">
+      <span class="status st-sale">For sale</span>
+      <span class="src">Redfin · MLS 2164249</span>
+      <a class="view" href="https://www.redfin.com/FL/Saint-Johns/94-Stone-Creek-Cir-32259/home/103524680">View listing</a>
+    </div>
+  </div>
+</article>
+      <p class="empty" id="empty">No listings match that search.</p>
+    </section>
+    <aside class="rail" aria-label="Map stand-in">
+      <h2>Map</h2>
+      <p class="standin">Stand-in outline and city list. Not a live map, and not a photo.</p>
+      <div class="mapbox">
+        <svg viewBox="0 0 220 280" role="img" aria-label="Simple outline of Florida">
+          <path fill="#e7f1ff" stroke="#006AFF" stroke-width="2" d="M14 86 L52 74 L86 78 L104 96 L116 122 L128 156 L136 188 L130 214 L146 236 L158 258 L146 266 L126 246 L116 222 L108 196 L100 168 L90 140 L76 114 L58 98 L30 96 Z"/>
+          <circle cx="40" cy="84" r="3.5" fill="#006AFF"/>
+          <circle cx="118" cy="108" r="3.5" fill="#006AFF"/>
+          <circle cx="108" cy="150" r="3.5" fill="#006AFF"/>
+          <circle cx="124" cy="188" r="3.5" fill="#006AFF"/>
+          <circle cx="136" cy="230" r="3.5" fill="#006AFF"/>
+        </svg>
+      </div>
+      <ul class="cities">
+        <li><span class="dot" aria-hidden="true"></span><span class="cname">Beverly Hills</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Boca Raton</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Davenport</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Davie</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Ellenton</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Eustis</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Frostproof</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Gainesville</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Homestead</span><span class="ccount">2</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Land O Lakes</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Lutz</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Miami</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Miramar Beach</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">New Port Richey</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Orange Park</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Pompano Beach</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Ponte Vedra Beach</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Saint Johns</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Sarasota</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Stuart</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Wesley Chapel</span><span class="ccount">1</span></li><li><span class="dot" aria-hidden="true"></span><span class="cname">Winter Haven</span><span class="ccount">2</span></li>
+      </ul>
+      <div class="rules" id="score">
+        <h3>How the score works</h3>
+        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100.</p>
+        <ol>
+          <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0.</li>
+          <li>Number of cuts on this listing: 5 each, up to 15.</li>
+          <li>Days on market: days divided by 12, up to 10. About 120 days or more is 10. Uses the printed days-on-market figure, otherwise days on Redfin or Zillow.</li>
+          <li>Drop from the first ask on this listing: 1 point per percent, up to 10.</li>
+          <li>Off market, then back, or expired and relisted: 12.</li>
+          <li>Relisted under the prior ask: 8 more.</li>
+          <li>Pending or contingent, then back on the market: 12. More than once is noted, not extra points.</li>
+          <li>Under the tax assessment or under the last sale: 6.</li>
+          <li>Vacant, moved, tenant, estate, divorce, relocation, or seller-financing language: 4. None of these pages earned it.</li>
+          <li>Remarks say motivated, bring offers, price improved, or similar: 4.</li>
+          <li>Agent replaced, or a refresh with no real change: 4. Not shown here.</li>
+          <li>Nearby homes went under contract, or a cut right after a dead open house: 4. Not shown here.</li>
+        </ol>
+      </div>
+    </aside>
+  </div>
+</main>
+<script>
+(function () {
+  var list = document.getElementById("list");
+  var cards = Array.prototype.slice.call(list.querySelectorAll(".card"));
+  var empty = document.getElementById("empty");
+  var count = document.getElementById("count");
+  var q = document.getElementById("q");
+  var sort = document.getElementById("sort");
+  document.getElementById("buy").addEventListener("click", function (e) { e.preventDefault(); });
+
+  function num(el, name) { return parseFloat(el.getAttribute(name)) || 0; }
+
+  function apply() {
+    var query = q.value.trim().toLowerCase();
+    var showAll = query === "" || query === "florida";
+    var visible = [];
+    cards.forEach(function (card) {
+      var hay = (card.getAttribute("data-address") + " " + card.getAttribute("data-city")).toLowerCase();
+      var ok = showAll || hay.indexOf(query) !== -1;
+      card.style.display = ok ? "" : "none";
+      if (ok) visible.push(card);
+    });
+    var key = sort.value;
+    visible.sort(function (a, b) {
+      if (key === "cut") return num(b, "data-cut") - num(a, "data-cut") || num(b, "data-score") - num(a, "data-score");
+      if (key === "dom") return num(b, "data-dom") - num(a, "data-dom") || num(b, "data-score") - num(a, "data-score");
+      return num(b, "data-score") - num(a, "data-score") || num(b, "data-cut") - num(a, "data-cut");
+    });
+    var hidden = cards.filter(function (card) { return card.style.display === "none"; });
+    visible.forEach(function (card, i) {
+      card.querySelector(".rank").textContent = String(i + 1);
+      list.insertBefore(card, empty);
+    });
+    hidden.forEach(function (card) { list.insertBefore(card, empty); });
+    count.textContent = String(visible.length);
+    empty.style.display = visible.length ? "none" : "block";
+  }
+  q.addEventListener("input", apply);
+  sort.addEventListener("change", apply);
+})();
+</script>
+</body>
+</html>
