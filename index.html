@@ -50,6 +50,16 @@
   }
   a { color: var(--ink); text-decoration: none; }
   a:hover { color: #000; }
+  .brand {
+    background: #000;
+    line-height: 0;
+  }
+  .brand img {
+    display: block;
+    width: min(100%, 960px);
+    height: auto;
+    margin: 0 auto;
+  }
   .top {
     position: sticky;
     top: 0;
@@ -379,6 +389,9 @@
 </style>
 </head>
 <body>
+<div class="brand">
+  <img src="og.jpg" alt="Lowball. Find the most desperate sellers.">
+</div>
 <header class="top">
   <div class="top-inner">
     <p class="logo">Lowball <span id="logo-state">Florida</span></p>
