@@ -6,7 +6,7 @@
 # list (the next page only when that list says there is one). It does not
 # open listing pages. If that list is missing, it stops and writes nothing.
 # A run that finds no price, score, or membership change does not rewrite
-# listings.json or texas.json.
+# listings.json, texas.json, or colorado.json.
 #
 # New homes are added only when their latest price cut is dated on or after
 # the cutoff in refresh_state.json ("last_fetch_date", the America/New_York
@@ -17,9 +17,11 @@
 # today; commit refresh_state.json with the boards. Override with --since.
 #
 # Page caps: --max-pages per city (default 5) and --max-total-pages across
-# both states (default 750). Every request, including a slug that 404s,
+# all states (default 750). Every request, including a slug that 404s,
 # counts toward the total. If the total cap is hit, the cities left are
 # skipped and the cutoff is not moved, so the next run still covers them.
+#
+# Colorado starts from CO_SEED_CITIES when colorado.json has no cities yet.
 #
 # Smoke test, one city, no writes:
 #   python3 refresh.py --city Eustis --state FL --max-pages 1 --dry-run
@@ -43,6 +45,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent
 FL_PATH = ROOT / "listings.json"
 TX_PATH = ROOT / "texas.json"
+CO_PATH = ROOT / "colorado.json"
 STATE_PATH = ROOT / "refresh_state.json"
 DEFAULT_MAX_PAGES = 5
 DEFAULT_MAX_TOTAL_PAGES = 750
@@ -52,6 +55,7 @@ UA = (
     "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 )
 LAND_TYPES = {"LOT", "LAND", "VACANT_LAND", "VACANTLAND"}
+KIND_STATE = {"fl": "FL", "tx": "TX", "co": "CO"}
 HOME_FL = {
     "SINGLE_FAMILY": "Single family",
     "CONDO": "Condo",
@@ -66,6 +70,61 @@ HOME_TX = {
     "MANUFACTURED": "manufactured",
     "MULTI_FAMILY": "multi-family",
 }
+# Same labels as Texas; Colorado cards use the TX-style schema.
+HOME_CO = HOME_TX
+# Used only when colorado.json has no cities yet (first seed / empty board).
+CO_SEED_CITIES = [
+    "Denver",
+    "Aurora",
+    "Colorado Springs",
+    "Fort Collins",
+    "Boulder",
+    "Lakewood",
+    "Thornton",
+    "Arvada",
+    "Westminster",
+    "Pueblo",
+    "Centennial",
+    "Greeley",
+    "Longmont",
+    "Loveland",
+    "Grand Junction",
+    "Broomfield",
+    "Castle Rock",
+    "Commerce City",
+    "Parker",
+    "Littleton",
+    "Northglenn",
+    "Englewood",
+    "Wheat Ridge",
+    "Brighton",
+    "Fountain",
+    "Lafayette",
+    "Louisville",
+    "Erie",
+    "Superior",
+    "Golden",
+    "Highlands Ranch",
+    "Lone Tree",
+    "Greenwood Village",
+    "Cherry Hills Village",
+    "Federal Heights",
+    "Sheridan",
+    "Edgewater",
+    "Firestone",
+    "Frederick",
+    "Windsor",
+    "Johnstown",
+    "Evans",
+    "Montrose",
+    "Durango",
+    "Steamboat Springs",
+    "Aspen",
+    "Vail",
+    "Glenwood Springs",
+    "Canon City",
+    "Trinidad",
+]
 STREET = {
     "STREET": "ST",
     "AVENUE": "AVE",
@@ -605,7 +664,7 @@ def apply_to_existing(kind: str, listing: dict, obs: dict) -> str:
             points_map["dom"] = float(points)
             listing["points"] = points_map
     listing["reasons"] = reasons
-    if kind == "tx" and isinstance(listing.get("points"), dict):
+    if kind != "fl" and isinstance(listing.get("points"), dict):
         listing["score"] = score_from_points(listing["points"])
     else:
         listing["score"] = score_from_reasons(reasons)
@@ -633,7 +692,7 @@ def new_listing(kind: str, obs: dict) -> dict:
         total = Decimal(100)
     score = float(round1(total))
     home_fl = HOME_FL.get(obs["home_type"] or "")
-    home_tx = HOME_TX.get(obs["home_type"] or "")
+    home_tx = (HOME_CO if kind == "co" else HOME_TX).get(obs["home_type"] or "")
     beds = obs["beds"]
     baths = obs["baths"]
     sqft = obs["sqft"] if isinstance(obs["sqft"], (int, float)) and obs["sqft"] > 0 else None
@@ -693,7 +752,7 @@ def new_listing(kind: str, obs: dict) -> dict:
         points["dom"] = float(dom_points(obs["days"]))
     return {
         "address": obs["street"].title(),
-        "city": obs["city"],
+        "city": obs["city"].title() if obs["city"] else obs["city"],
         "zip": obs["zip"],
         "price": obs["price"],
         "beds": beds,
@@ -723,11 +782,17 @@ def refresh_board(
     since: str,
     budget: dict,
 ):
-    state = "FL" if kind == "fl" else "TX"
+    state = KIND_STATE[kind]
     listings = board["listings"]
     wanted = cities_on_board(listings, state)
+    if not wanted and kind == "co":
+        wanted = list(CO_SEED_CITIES)
+        print(f"Colorado board has no cities yet; seeding from {len(wanted)} metro / major CO cities.")
     if city_filter:
         wanted = [city for city in wanted if norm_place(city) == norm_place(city_filter)]
+        if not wanted and kind == "co":
+            # Allow seeding a single named CO city even before the board exists.
+            wanted = [city_filter]
         if not wanted:
             raise SystemExit(
                 f"{city_filter} is not a {state} city already on the board. Nothing was requested."
@@ -823,14 +888,14 @@ def load_state() -> dict:
     return data if isinstance(data, dict) else {}
 
 
-def resolve_since(arg_since: str | None, state: dict, fl_board: dict, tx_board: dict) -> tuple[str, str]:
+def resolve_since(arg_since: str | None, state: dict, *boards: dict) -> tuple[str, str]:
     if arg_since:
         return parse_day(arg_since), "--since"
     saved = state.get("last_fetch_date")
     if saved:
         return parse_day(saved), f"{STATE_PATH.name} last_fetch_date"
     # No state file yet: fall back to the older board fetch date, never wider.
-    dates = [b.get("fetched") for b in (fl_board, tx_board) if b.get("fetched")]
+    dates = [b.get("fetched") for b in boards if b.get("fetched")]
     if dates:
         return parse_day(min(dates)), "board fetched date (no state file)"
     return today_iso(), "today (no state file or board date)"
@@ -901,7 +966,8 @@ def top_home(kind: str, listings: list[dict]) -> str:
     if kind == "fl":
         addr = best.get("address") or ""
     else:
-        addr = f"{best.get('address')}, {best.get('city')}, TX {best.get('zip')}"
+        st = KIND_STATE.get(kind, "")
+        addr = f"{best.get('address')}, {best.get('city')}, {st} {best.get('zip')}"
     return f"{addr} — {score:.1f}"
 
 
@@ -916,38 +982,46 @@ def snapshot(board: dict) -> str:
 
 
 def _finish(
-    args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_changed, fl_stats, tx_stats,
-    since, since_src, budget, state,
+    args,
+    boards,
+    befores,
+    changed,
+    stats,
+    since,
+    since_src,
+    budget,
+    state,
 ) -> int:
-    if fl_changed:
-        write_if_changed(FL_PATH, fl_before, fl_board, args.dry_run)
-    else:
-        print("listings.json: no change, not rewritten")
-    if tx_changed:
-        write_if_changed(TX_PATH, tx_before, tx_board, args.dry_run)
-    else:
-        print("texas.json: no change, not rewritten")
-    rechecked = fl_stats["rechecked"] + tx_stats["rechecked"]
-    added = fl_stats["added"] + tx_stats["added"]
-    removed = fl_stats["removed"] + tx_stats["removed"]
-    updated = fl_stats["updated"] + tx_stats["updated"]
+    labels = [("fl", "listings.json", "Florida"), ("tx", "texas.json", "Texas"), ("co", "colorado.json", "Colorado")]
+    for kind, fname, _label in labels:
+        if changed[kind]:
+            write_if_changed({"fl": FL_PATH, "tx": TX_PATH, "co": CO_PATH}[kind], befores[kind], boards[kind], args.dry_run)
+        else:
+            print(f"{fname}: no change, not rewritten")
+    rechecked = sum(stats[k]["rechecked"] for k in stats)
+    added = sum(stats[k]["added"] for k in stats)
+    removed = sum(stats[k]["removed"] for k in stats)
+    updated = sum(stats[k]["updated"] for k in stats)
     print(f"rechecked {rechecked}, added {added}, removed {removed} (updated {updated})")
-    old_cut = fl_stats.get("old_cut", 0) + tx_stats.get("old_cut", 0)
+    old_cut = sum(stats[k].get("old_cut", 0) for k in stats)
     print(f"cutoff {since} ({since_src}): left off {old_cut} rows whose latest cut is older or undated")
-    for label, stats in (("FL", fl_stats), ("TX", tx_stats)):
-        examples = stats.get("examples") or []
+    for kind, _fname, label in labels:
+        examples = stats[kind].get("examples") or []
         if examples:
             print(f"{label} examples: " + " | ".join(examples[:5]))
     print(
-        f"lists: FL {fl_stats['cities']} cities / {fl_stats['pages']} pages / {fl_stats['rows']} rows; "
-        f"TX {tx_stats['cities']} cities / {tx_stats['pages']} pages / {tx_stats['rows']} rows"
+        "lists: "
+        + "; ".join(
+            f"{KIND_STATE[kind]} {stats[kind]['cities']} cities / {stats[kind]['pages']} pages / {stats[kind]['rows']} rows"
+            for kind, _fname, _label in labels
+        )
     )
     print(f"pages requested {budget['used']} of the {budget['cap']} total cap; city cap {args.max_pages}")
     limited = bool(args.city or args.state or args.since)
     if limited:
         print("Limited run. Cities that were not named were not requested.")
     if budget["hit"]:
-        skipped = fl_stats.get("cities_capped_out", 0) + tx_stats.get("cities_capped_out", 0)
+        skipped = sum(stats[k].get("cities_capped_out", 0) for k in stats)
         print(f"Total page cap reached; {skipped} cities were not requested.")
     if args.dry_run:
         print(f"{STATE_PATH.name}: dry run, cutoff not moved")
@@ -966,42 +1040,92 @@ def _finish(
                 "left_off_old_cut": old_cut,
             },
         )
-    print(f"top Florida: {top_home('fl', fl_board['listings'])}")
-    print(f"top Texas: {top_home('tx', tx_board['listings'])}")
+    for kind, _fname, label in labels:
+        print(f"top {label}: {top_home(kind, boards[kind]['listings'])}")
     return 0
+
+
+def empty_stats() -> dict:
+    return {
+        "cities": 0,
+        "pages": 0,
+        "rows": 0,
+        "rechecked": 0,
+        "updated": 0,
+        "added": 0,
+        "removed": 0,
+        "skipped": 0,
+        "old_cut": 0,
+        "cities_capped_out": 0,
+    }
+
+
+def empty_co_board() -> dict:
+    return {
+        "state": "CO",
+        "fetched": today_iso(),
+        "timezone": "America/New_York",
+        "scoreCap": 100,
+        "count": 0,
+        "originalCount": 0,
+        "newCount": 0,
+        "note": (
+            "Colorado board seeded from public Zillow price-reduced city lists for Denver metro "
+            "and major CO cities. Same scoring rules as Florida and Texas. Only the latest cut "
+            "printed in each list, the one cut it shows, and days on Zillow were scored on new rows."
+        ),
+        "rules": (
+            "Points only when the listing page shows the signal. Latest cut percent times 2.3, "
+            "cap 25. Cuts on the current MLS number, 5 each, cap 15. DOM days/12, cap 10, using "
+            "days on market when printed, otherwise days on Redfin or Zillow. Drop from the first "
+            "ask on the current listing, 1 point per percent, cap 10. Off the market then back, 12. "
+            "Relisted under the prior ask, 8, only when that price is printed and lower. Pending or "
+            "contingent then back, 12, not also off-then-back unless a separate removal is shown. "
+            "Under the newest printed assessment or the last printed sale price, 6 once. Motivated "
+            "remarks, 4. Half up to one decimal. Cap 100."
+        ),
+        "listings": [],
+    }
+
+
+def load_board_or_empty(path: Path, kind: str) -> tuple[dict, str]:
+    if path.exists():
+        return load_board(path)
+    if kind != "co":
+        raise SystemExit(f"{path.name} is missing. Nothing was requested.")
+    board = empty_co_board()
+    before = json.dumps(board, indent=2, ensure_ascii=False) + "\n"
+    return board, before
 
 
 def run(args) -> int:
     fl_board, fl_before = load_board(FL_PATH)
     tx_board, tx_before = load_board(TX_PATH)
-    fl_snap = snapshot(fl_board)
-    tx_snap = snapshot(tx_board)
+    co_board, co_before = load_board_or_empty(CO_PATH, "co")
+    boards = {"fl": fl_board, "tx": tx_board, "co": co_board}
+    befores = {"fl": fl_before, "tx": tx_before, "co": co_before}
+    snaps = {k: snapshot(boards[k]) for k in boards}
     state_filter = args.state.upper() if args.state else None
     state = load_state()
-    since, since_src = resolve_since(args.since, state, fl_board, tx_board)
+    since, since_src = resolve_since(args.since, state, fl_board, tx_board, co_board)
     print(f"Adding only homes whose latest cut is dated {since} or later ({since_src}).")
     budget = {"left": args.max_total_pages, "cap": args.max_total_pages, "used": 0, "hit": False}
-    empty = {"cities": 0, "pages": 0, "rows": 0, "rechecked": 0, "updated": 0, "added": 0, "removed": 0, "skipped": 0, "old_cut": 0, "cities_capped_out": 0}
-    fl_stats = dict(empty)
-    tx_stats = dict(empty)
+    stats = {k: empty_stats() for k in boards}
     try:
-        if state_filter in (None, "FL"):
-            fl_stats = refresh_board("fl", fl_board, args.city, args.max_pages, args.delay, since, budget)
-        if state_filter in (None, "TX"):
-            tx_stats = refresh_board("tx", tx_board, args.city, args.max_pages, args.delay, since, budget)
+        for kind, abbrev in (("fl", "FL"), ("tx", "TX"), ("co", "CO")):
+            if state_filter in (None, abbrev):
+                stats[kind] = refresh_board(
+                    kind, boards[kind], args.city, args.max_pages, args.delay, since, budget
+                )
     except ListBlocked as exc:
         print(f"Stopped. {exc} No files were written.", file=sys.stderr)
         return 2
-    fl_changed = snapshot(fl_board) != fl_snap
-    tx_changed = snapshot(tx_board) != tx_snap
-    if fl_changed:
-        counts_changed("fl", fl_board)
-    if tx_changed:
-        counts_changed("tx", tx_board)
-    return _finish(
-        args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_changed, fl_stats, tx_stats,
-        since, since_src, budget, state,
-    )
+    changed = {k: snapshot(boards[k]) != snaps[k] for k in boards}
+    for kind in boards:
+        if changed[kind]:
+            counts_changed(kind, boards[kind])
+    return _finish(args, boards, befores, changed, stats, since, since_src, budget, state)
+
 
 
 def self_test() -> int:
@@ -1118,7 +1242,7 @@ def self_test() -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Refresh Lowball from Zillow price-reduced city lists.")
     parser.add_argument("--city", help="Only this city, and only if it is already on the board.")
-    parser.add_argument("--state", choices=["FL", "TX", "fl", "tx"], help="Only this state.")
+    parser.add_argument("--state", choices=["FL", "TX", "CO", "fl", "tx", "co"], help="Only this state.")
     parser.add_argument(
         "--max-pages", type=int, default=DEFAULT_MAX_PAGES,
         help=f"Stop each city after this many list pages (default {DEFAULT_MAX_PAGES}).",

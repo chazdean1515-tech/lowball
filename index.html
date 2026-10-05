@@ -6,13 +6,13 @@
 <title>Lowball</title>
 <meta name="description" content="Find the most desperate sellers. Lowball ranks homes by price cuts, failed deals, and cheaper relists.">
 <meta property="og:title" content="Lowball">
-<meta property="og:description" content="Find the most desperate sellers. Florida and Texas are live.">
+<meta property="og:description" content="Find the most desperate sellers. Florida, Texas, and Colorado are live.">
 <meta property="og:image" content="https://uselowball.com/og.jpg">
 <meta property="og:url" content="https://uselowball.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Lowball">
-<meta name="twitter:description" content="Find the most desperate sellers. Florida and Texas are live.">
+<meta name="twitter:description" content="Find the most desperate sellers. Florida, Texas, and Colorado are live.">
 <meta name="twitter:image" content="https://uselowball.com/og.jpg">
 <style>
   @font-face {
@@ -449,6 +449,7 @@
     <nav>
       <button type="button" class="state-btn is-on" id="show-fl" aria-pressed="true">Florida</button>
       <button type="button" class="state-btn" id="show-tx" aria-pressed="false">Texas</button>
+      <button type="button" class="state-btn" id="show-co" aria-pressed="false">Colorado</button>
       <a href="#score">Score</a>
     </nav>
   </div>
@@ -493,6 +494,16 @@
           <circle cx="60" cy="130" r="3.5" fill="#3c3c3c"/>
         </svg>
       </div>
+      <div class="mapbox" id="map-co" hidden>
+        <svg viewBox="0 0 260 180" role="img" aria-label="Simple outline of Colorado">
+          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M18 28 L242 28 L242 152 L18 152 Z"/>
+          <circle cx="150" cy="78" r="3.5" fill="#3c3c3c"/>
+          <circle cx="168" cy="70" r="3.5" fill="#3c3c3c"/>
+          <circle cx="155" cy="118" r="3.5" fill="#3c3c3c"/>
+          <circle cx="140" cy="48" r="3.5" fill="#3c3c3c"/>
+          <circle cx="70" cy="90" r="3.5" fill="#3c3c3c"/>
+        </svg>
+      </div>
       <ul class="cities" id="cities"></ul>
       <div class="rules" id="score">
         <h3>How the score works</h3>
@@ -514,6 +525,7 @@
           </ol>
         </div>
         <p id="rules-tx" hidden></p>
+        <p id="rules-co" hidden></p>
       </div>
     </aside>
   </div>
@@ -533,12 +545,18 @@
   var citiesEl = document.getElementById("cities");
   var mapFl = document.getElementById("map-fl");
   var mapTx = document.getElementById("map-tx");
+  var mapCo = document.getElementById("map-co");
   var rulesFl = document.getElementById("rules-fl");
   var rulesTx = document.getElementById("rules-tx");
+  var rulesCo = document.getElementById("rules-co");
   var btnFl = document.getElementById("show-fl");
   var btnTx = document.getElementById("show-tx");
-  var boards = { fl: null, tx: null };
+  var btnCo = document.getElementById("show-co");
+  var boards = { fl: null, tx: null, co: null };
   var state = "fl";
+  var stateLabel = { fl: "Florida", tx: "Texas", co: "Colorado" };
+  var stateAbbr = { fl: "FL", tx: "TX", co: "CO" };
+  var stateSlug = { fl: "florida", tx: "texas", co: "colorado" };
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);
@@ -570,7 +588,7 @@
 
   function fullAddress(kind, item) {
     if (kind === "fl") return item.address;
-    return item.address + ", " + item.city + ", TX " + item.zip;
+    return item.address + ", " + item.city + ", " + stateAbbr[kind] + " " + item.zip;
   }
 
   function factsLine(kind, item) {
@@ -729,7 +747,7 @@
 
   function apply() {
     var board = boards[state];
-    var stateName = state === "fl" ? "florida" : "texas";
+    var stateName = stateSlug[state];
     var query = q.value.trim().toLowerCase();
     var showAll = query === "" || query === stateName;
     var all = cards();
@@ -790,17 +808,21 @@
       list.insertBefore(makeCard(kind, item), empty);
     });
     fillCities(board.listings);
-    var label = kind === "fl" ? "Florida" : "Texas";
+    var label = stateLabel[kind];
     place.textContent = label;
     logoState.textContent = label;
     mapFl.hidden = kind !== "fl";
     mapTx.hidden = kind !== "tx";
+    mapCo.hidden = kind !== "co";
     rulesFl.hidden = kind !== "fl";
     rulesTx.hidden = kind !== "tx";
+    rulesCo.hidden = kind !== "co";
     btnFl.classList.toggle("is-on", kind === "fl");
     btnTx.classList.toggle("is-on", kind === "tx");
+    btnCo.classList.toggle("is-on", kind === "co");
     btnFl.setAttribute("aria-pressed", kind === "fl" ? "true" : "false");
     btnTx.setAttribute("aria-pressed", kind === "tx" ? "true" : "false");
+    btnCo.setAttribute("aria-pressed", kind === "co" ? "true" : "false");
     apply();
   }
 
@@ -814,6 +836,7 @@
 
   btnFl.addEventListener("click", function () { setState("fl"); });
   btnTx.addEventListener("click", function () { setState("tx"); });
+  btnCo.addEventListener("click", function () { setState("co"); });
   q.addEventListener("input", apply);
   sort.addEventListener("change", apply);
 
@@ -827,10 +850,12 @@
   empty.textContent = "Loading listings.";
   empty.style.display = "block";
 
-  Promise.all([load("listings.json"), load("texas.json")]).then(function (pair) {
+  Promise.all([load("listings.json"), load("texas.json"), load("colorado.json")]).then(function (pair) {
     boards.fl = pair[0];
     boards.tx = pair[1];
+    boards.co = pair[2];
     if (pair[1] && pair[1].rules) rulesTx.textContent = pair[1].rules;
+    if (pair[2] && pair[2].rules) rulesCo.textContent = pair[2].rules;
     render();
   }).catch(function (err) {
     empty.textContent = "Could not load the listing files. " + (err && err.message ? err.message : "Try again.");
