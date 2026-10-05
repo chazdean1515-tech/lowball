@@ -389,11 +389,56 @@
     border-radius: 4px;
   }
   .more:hover { background: #f4f4f1; }
-  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible {
+  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible, .move-quote:focus-visible {
     outline: 2px solid var(--char);
     outline-offset: 2px;
   }
   .more[hidden] { display: none; }
+  .move-cta {
+    background: #f4f4f1;
+    border: 1px solid #d5d5d1;
+    border-radius: 2px;
+    padding: 12px 14px;
+    margin: 0 0 10px;
+  }
+  .move-cta h2 {
+    margin: 0 0 4px;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: var(--char);
+  }
+  .move-cta p {
+    margin: 0;
+    color: var(--char);
+    font-size: 15px;
+  }
+  .move-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+    margin-top: 10px;
+  }
+  .move-quote {
+    display: inline-block;
+    padding: 7px 12px;
+    background: #fff;
+    color: var(--char);
+    border: 1px solid #c8c8c4;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+  .move-quote:hover { background: #e6e6e3; color: var(--ink); }
+  .move-note {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
   .rail {
     position: sticky;
     top: calc(var(--header-offset) + 8px);
@@ -489,6 +534,7 @@
     font-size: 12px;
     font-weight: 400;
   }
+  .site-footer .disclosure { max-width: 72ch; }
   @media (max-width: 860px) {
     :root { --header-offset: 144px; }
     .top-inner {
@@ -514,6 +560,8 @@
     .price { font-size: 22px; }
     .addr { font-size: 15px; }
     .page { padding: 14px 12px 36px; }
+    .move-cta { padding: 12px; }
+    .move-cta-row { flex-direction: column; align-items: flex-start; gap: 8px; }
   }
 </style>
 </head>
@@ -553,6 +601,14 @@
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
   <div class="layout">
     <div class="board">
+      <aside class="move-cta" aria-label="Moving quote">
+        <h2>Planning a move?</h2>
+        <p>Get a free moving quote from ScanToMove. Use code G5BN0WRA for 3% off.</p>
+        <p class="move-cta-row">
+          <a class="move-quote" href="https://scantomove.com/auth?ref=G5BN0WRA" target="_blank" rel="sponsored noopener">Get a free quote</a>
+          <span class="move-note">Affiliate link. Lowball may earn a commission if you book a move. No extra cost to you.</span>
+        </p>
+      </aside>
       <section id="list" aria-label="Listings"></section>
       <p class="empty" id="empty">Loading Florida listings.</p>
       <button type="button" class="more" id="more" hidden>Show more listings</button>
@@ -626,6 +682,7 @@
     <a href="privacy.html">Privacy</a>
     <a href="terms.html">Terms</a>
   </nav>
+  <p class="disclosure">Lowball ranks publicly listed homes using published listing signals. We are not a real estate brokerage, lender, insurer, or moving company, and we don't give real estate, insurance, or legal advice. We may earn a commission when you request a quote or book through partner links. Listing data can be incomplete or outdated, so check everything yourself before acting.</p>
   <p>Lowball is not affiliated with Redfin, Zillow, or any MLS. The boards are not a live feed.</p>
   <p>Lowball™ and uselowball.com are trademarks of Charlie O'Brien.</p>
 </footer>
