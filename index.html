@@ -378,6 +378,17 @@
     padding: 24px;
     color: var(--muted);
   }
+  .site-footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px 28px;
+  }
+  .site-footer p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+  }
   @media (max-width: 860px) {
     .top-inner { grid-template-columns: 1fr; gap: 10px; }
     .layout { grid-template-columns: 1fr; }
@@ -480,6 +491,9 @@
     </aside>
   </div>
 </main>
+<footer class="site-footer">
+  <p>Lowball™ and uselowball.com are trademarks of Charlie O'Brien.</p>
+</footer>
 <script>
 (function () {
   var list = document.getElementById("list");
