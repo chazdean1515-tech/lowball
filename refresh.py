@@ -6,7 +6,20 @@
 # list (the next page only when that list says there is one). It does not
 # open listing pages. If that list is missing, it stops and writes nothing.
 # A run that finds no price, score, or membership change does not rewrite
-# listings.json or texas.json and does not need a commit.
+# listings.json or texas.json.
+#
+# New homes are added only when their latest price cut is dated on or after
+# the cutoff in refresh_state.json ("last_fetch_date", the America/New_York
+# date of the last complete run). The cutoff day itself is included because
+# Zillow dates cuts by day only, so a cut dated on the last run's day may have
+# posted after that run. Homes already on the board are never added twice.
+# A complete, written (not --dry-run, not limited) run moves the cutoff to
+# today; commit refresh_state.json with the boards. Override with --since.
+#
+# Page caps: --max-pages per city (default 5) and --max-total-pages across
+# both states (default 750). Every request, including a slug that 404s,
+# counts toward the total. If the total cap is hit, the cities left are
+# skipped and the cutoff is not moved, so the next run still covers them.
 #
 # Smoke test, one city, no writes:
 #   python3 refresh.py --city Eustis --state FL --max-pages 1 --dry-run
@@ -30,6 +43,9 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent
 FL_PATH = ROOT / "listings.json"
 TX_PATH = ROOT / "texas.json"
+STATE_PATH = ROOT / "refresh_state.json"
+DEFAULT_MAX_PAGES = 5
+DEFAULT_MAX_TOTAL_PAGES = 750
 TZ = ZoneInfo("America/New_York")
 UA = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -99,6 +115,12 @@ def num_txt(n) -> str:
 
 def today_iso() -> str:
     return datetime.now(TZ).date().isoformat()
+
+
+def ms_to_iso(ms) -> str | None:
+    if not isinstance(ms, (int, float)):
+        return None
+    return datetime.fromtimestamp(ms / 1000, tz=TZ).date().isoformat()
 
 
 def ms_to_date(ms) -> str | None:
@@ -335,6 +357,7 @@ def observation_from_item(item: dict) -> dict | None:
         "cut_display": f"{round1(percent):.1f}",
         "days": days,
         "when": ms_to_date(info.get("datePriceChanged")),
+        "cut_date": ms_to_iso(info.get("datePriceChanged")),
         "home_type": home_type,
         "beds": info.get("bedrooms", item.get("beds")),
         "baths": info.get("bathrooms", item.get("baths")),
@@ -427,7 +450,9 @@ def fetch(url: str) -> tuple[int, str, str]:
         ) from exc
 
 
-def fetch_city_lists(city: str, state: str, max_pages: int | None, delay: float) -> list[dict] | None:
+def fetch_city_lists(
+    city: str, state: str, max_pages: int | None, delay: float, budget: dict
+) -> list[dict] | None:
     last_error = None
     for slug in slug_token_sets(city):
         url = f"https://www.zillow.com/{slug}-{state.lower()}/price-reduced/"
@@ -437,7 +462,14 @@ def fetch_city_lists(city: str, state: str, max_pages: int | None, delay: float)
         while url and url not in seen_urls:
             page_num += 1
             if max_pages is not None and page_num > max_pages:
+                print(f"{city}, {state}: stopped at the {max_pages}-page city cap")
                 break
+            if budget["left"] <= 0:
+                budget["hit"] = True
+                print(f"{city}, {state}: stopped, total page cap reached")
+                break
+            budget["left"] -= 1
+            budget["used"] += 1
             seen_urls.add(url)
             if pages and delay:
                 time.sleep(delay)
@@ -469,6 +501,9 @@ def fetch_city_lists(city: str, state: str, max_pages: int | None, delay: float)
             url = nxt if nxt.startswith("http") else "https://www.zillow.com" + nxt
         if pages:
             return pages
+        if budget["left"] <= 0:
+            budget["hit"] = True
+            break
         if delay:
             time.sleep(min(delay, 0.5))
     print(
@@ -679,7 +714,15 @@ def new_listing(kind: str, obs: dict) -> dict:
     }
 
 
-def refresh_board(kind: str, board: dict, city_filter: str | None, max_pages: int | None, delay: float):
+def refresh_board(
+    kind: str,
+    board: dict,
+    city_filter: str | None,
+    max_pages: int | None,
+    delay: float,
+    since: str,
+    budget: dict,
+):
     state = "FL" if kind == "fl" else "TX"
     listings = board["listings"]
     wanted = cities_on_board(listings, state)
@@ -699,12 +742,18 @@ def refresh_board(kind: str, board: dict, city_filter: str | None, max_pages: in
         "added": 0,
         "removed": 0,
         "skipped": 0,
+        "old_cut": 0,
+        "cities_capped_out": 0,
     }
     remove_ids = set()
     seen_new = set()
     stats["examples"] = []
     for city in wanted:
-        pages = fetch_city_lists(city, state, max_pages, delay)
+        if budget["left"] <= 0:
+            budget["hit"] = True
+            stats["cities_capped_out"] += 1
+            continue
+        pages = fetch_city_lists(city, state, max_pages, delay, budget)
         if not pages:
             stats["skipped"] += 1
             continue
@@ -738,6 +787,11 @@ def refresh_board(kind: str, board: dict, city_filter: str | None, max_pages: in
                 if obs["exclude"] or not obs["zpid"] or obs["zpid"] in seen_new:
                     stats["skipped"] += 1
                     continue
+                # Only brand-new cuts become new cards. A row with no cut date,
+                # or a cut dated before the cutoff, is left off.
+                if not is_new_cut(obs, since):
+                    stats["old_cut"] += 1
+                    continue
                 created = new_listing(kind, obs)
                 listings.append(created)
                 seen_new.add(obs["zpid"])
@@ -752,6 +806,62 @@ def refresh_board(kind: str, board: dict, city_filter: str | None, max_pages: in
     else:
         board["listings"] = listings
     return stats
+
+
+def is_new_cut(obs: dict, since: str) -> bool:
+    cut_date = obs.get("cut_date")
+    return bool(cut_date) and cut_date >= since
+
+
+def load_state() -> dict:
+    if not STATE_PATH.exists():
+        return {}
+    try:
+        data = json.loads(STATE_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"{STATE_PATH.name} is not valid JSON ({exc}). Nothing was requested.")
+    return data if isinstance(data, dict) else {}
+
+
+def resolve_since(arg_since: str | None, state: dict, fl_board: dict, tx_board: dict) -> tuple[str, str]:
+    if arg_since:
+        return parse_day(arg_since), "--since"
+    saved = state.get("last_fetch_date")
+    if saved:
+        return parse_day(saved), f"{STATE_PATH.name} last_fetch_date"
+    # No state file yet: fall back to the older board fetch date, never wider.
+    dates = [b.get("fetched") for b in (fl_board, tx_board) if b.get("fetched")]
+    if dates:
+        return parse_day(min(dates)), "board fetched date (no state file)"
+    return today_iso(), "today (no state file or board date)"
+
+
+def parse_day(value: str) -> str:
+    try:
+        return datetime.strptime(str(value), "%Y-%m-%d").date().isoformat()
+    except ValueError:
+        raise SystemExit(f"Cutoff {value!r} is not YYYY-MM-DD. Nothing was requested.")
+
+
+def save_state(state: dict, stats: dict) -> None:
+    now = datetime.now(TZ)
+    out = dict(state)
+    out.update(
+        {
+            "timezone": "America/New_York",
+            "last_fetch": now.isoformat(timespec="seconds"),
+            "last_fetch_date": now.date().isoformat(),
+            "rule": (
+                "refresh.py adds a new home only when its latest Zillow price cut is dated "
+                "on or after last_fetch_date. Updated after each complete, written run."
+            ),
+            "last_run": stats,
+        }
+    )
+    temp = STATE_PATH.with_suffix(".json.tmp")
+    temp.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    temp.replace(STATE_PATH)
+    print(f"{STATE_PATH.name}: cutoff moved to {out['last_fetch_date']}")
 
 
 def counts_changed(kind: str, board: dict) -> None:
@@ -805,7 +915,10 @@ def snapshot(board: dict) -> str:
 
 
 
-def _finish(args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_changed, fl_stats, tx_stats) -> int:
+def _finish(
+    args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_changed, fl_stats, tx_stats,
+    since, since_src, budget, state,
+) -> int:
     if fl_changed:
         write_if_changed(FL_PATH, fl_before, fl_board, args.dry_run)
     else:
@@ -819,6 +932,8 @@ def _finish(args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_chang
     removed = fl_stats["removed"] + tx_stats["removed"]
     updated = fl_stats["updated"] + tx_stats["updated"]
     print(f"rechecked {rechecked}, added {added}, removed {removed} (updated {updated})")
+    old_cut = fl_stats.get("old_cut", 0) + tx_stats.get("old_cut", 0)
+    print(f"cutoff {since} ({since_src}): left off {old_cut} rows whose latest cut is older or undated")
     for label, stats in (("FL", fl_stats), ("TX", tx_stats)):
         examples = stats.get("examples") or []
         if examples:
@@ -827,8 +942,30 @@ def _finish(args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_chang
         f"lists: FL {fl_stats['cities']} cities / {fl_stats['pages']} pages / {fl_stats['rows']} rows; "
         f"TX {tx_stats['cities']} cities / {tx_stats['pages']} pages / {tx_stats['rows']} rows"
     )
-    if args.city or args.max_pages is not None or args.state:
+    print(f"pages requested {budget['used']} of the {budget['cap']} total cap; city cap {args.max_pages}")
+    limited = bool(args.city or args.state or args.since)
+    if limited:
         print("Limited run. Cities that were not named were not requested.")
+    if budget["hit"]:
+        skipped = fl_stats.get("cities_capped_out", 0) + tx_stats.get("cities_capped_out", 0)
+        print(f"Total page cap reached; {skipped} cities were not requested.")
+    if args.dry_run:
+        print(f"{STATE_PATH.name}: dry run, cutoff not moved")
+    elif limited or budget["hit"]:
+        print(f"{STATE_PATH.name}: cutoff not moved (limited run or total page cap reached)")
+    else:
+        save_state(
+            state,
+            {
+                "since": since,
+                "pages": budget["used"],
+                "added": added,
+                "removed": removed,
+                "updated": updated,
+                "rechecked": rechecked,
+                "left_off_old_cut": old_cut,
+            },
+        )
     print(f"top Florida: {top_home('fl', fl_board['listings'])}")
     print(f"top Texas: {top_home('tx', tx_board['listings'])}")
     return 0
@@ -840,14 +977,18 @@ def run(args) -> int:
     fl_snap = snapshot(fl_board)
     tx_snap = snapshot(tx_board)
     state_filter = args.state.upper() if args.state else None
-    empty = {"cities": 0, "pages": 0, "rows": 0, "rechecked": 0, "updated": 0, "added": 0, "removed": 0, "skipped": 0}
+    state = load_state()
+    since, since_src = resolve_since(args.since, state, fl_board, tx_board)
+    print(f"Adding only homes whose latest cut is dated {since} or later ({since_src}).")
+    budget = {"left": args.max_total_pages, "cap": args.max_total_pages, "used": 0, "hit": False}
+    empty = {"cities": 0, "pages": 0, "rows": 0, "rechecked": 0, "updated": 0, "added": 0, "removed": 0, "skipped": 0, "old_cut": 0, "cities_capped_out": 0}
     fl_stats = dict(empty)
     tx_stats = dict(empty)
     try:
         if state_filter in (None, "FL"):
-            fl_stats = refresh_board("fl", fl_board, args.city, args.max_pages, args.delay)
+            fl_stats = refresh_board("fl", fl_board, args.city, args.max_pages, args.delay, since, budget)
         if state_filter in (None, "TX"):
-            tx_stats = refresh_board("tx", tx_board, args.city, args.max_pages, args.delay)
+            tx_stats = refresh_board("tx", tx_board, args.city, args.max_pages, args.delay, since, budget)
     except ListBlocked as exc:
         print(f"Stopped. {exc} No files were written.", file=sys.stderr)
         return 2
@@ -857,7 +998,10 @@ def run(args) -> int:
         counts_changed("fl", fl_board)
     if tx_changed:
         counts_changed("tx", tx_board)
-    return _finish(args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_changed, fl_stats, tx_stats)
+    return _finish(
+        args, fl_board, tx_board, fl_before, tx_before, fl_changed, tx_changed, fl_stats, tx_stats,
+        since, since_src, budget, state,
+    )
 
 
 def self_test() -> int:
@@ -879,6 +1023,7 @@ def self_test() -> int:
         "cut_display": "7.3",
         "days": 28,
         "when": "Oct 1, 2026",
+        "cut_date": "2026-10-01",
         "home_type": "SINGLE_FAMILY",
         "beds": 3,
         "baths": 2,
@@ -957,6 +1102,15 @@ def self_test() -> int:
     if not seen or seen["exclude"] != "land":
         print(f"self-test failed: land list row {seen}", file=sys.stderr)
         return 1
+    if not is_new_cut(obs, "2026-10-01") or not is_new_cut(obs, "2026-09-30"):
+        print("self-test failed: cut on or after the cutoff was not new", file=sys.stderr)
+        return 1
+    if is_new_cut(obs, "2026-10-02") or is_new_cut(dict(obs, cut_date=None), "2026-09-01"):
+        print("self-test failed: old or undated cut counted as new", file=sys.stderr)
+        return 1
+    if seen.get("cut_date") is not None:
+        print("self-test failed: list row with no datePriceChanged got a cut date", file=sys.stderr)
+        return 1
     print("self-test ok")
     return 0
 
@@ -965,7 +1119,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Refresh Lowball from Zillow price-reduced city lists.")
     parser.add_argument("--city", help="Only this city, and only if it is already on the board.")
     parser.add_argument("--state", choices=["FL", "TX", "fl", "tx"], help="Only this state.")
-    parser.add_argument("--max-pages", type=int, default=None, help="Stop each city after this many list pages.")
+    parser.add_argument(
+        "--max-pages", type=int, default=DEFAULT_MAX_PAGES,
+        help=f"Stop each city after this many list pages (default {DEFAULT_MAX_PAGES}).",
+    )
+    parser.add_argument(
+        "--max-total-pages", type=int, default=DEFAULT_MAX_TOTAL_PAGES,
+        help=f"Stop the whole run after this many list requests (default {DEFAULT_MAX_TOTAL_PAGES}).",
+    )
+    parser.add_argument(
+        "--since",
+        help="Add only cuts dated on or after this YYYY-MM-DD instead of refresh_state.json. Does not move the cutoff.",
+    )
     parser.add_argument("--delay", type=float, default=1.0, help="Seconds between list requests.")
     parser.add_argument("--dry-run", action="store_true", help="Do not write JSON files.")
     parser.add_argument("--self-test", action="store_true", help="Run local checks and do not touch the boards.")
