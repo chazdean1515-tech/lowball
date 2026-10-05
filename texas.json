@@ -3,10 +3,10 @@
   "fetched": "2026-10-05",
   "timezone": "America/New_York",
   "scoreCap": 100,
-  "count": 1019,
+  "count": 984,
   "originalCount": 34,
-  "newCount": 985,
-  "rules": "Points only when the listing page shows the signal. Latest cut percent times 2.3, cap 25. Cuts on the current MLS number, 5 each, cap 15. DOM days/12, cap 10, using days on market when printed, otherwise days on Zillow. A few earlier Texas listings use days on Redfin. Drop from the first ask on the current listing, 1 point per percent, cap 10. Off the market then back, 12. Relisted under the prior ask, 8, only when that price is printed and lower. Pending or contingent then back, 12, not also off-then-back unless a separate removal is shown. Under the newest printed assessment or the last printed sale price, 6 once. Motivated remarks, 4. Half up to one decimal. Cap 100.",
+  "newCount": 950,
+  "rules": "Points only when the listing page shows the signal. Latest cut percent times 2.3, cap 25. Cuts on the current MLS number, 5 each, cap 15. DOM days/12, cap 10, using days on market when printed, otherwise days on Zillow. A few earlier Texas listings use days on Redfin. Drop from the first ask on the current listing, 1 point per percent, cap 10. Off the market then back, 12. Relisted under the prior ask, 8, only when that price is printed and lower. Pending or contingent then back, 12, not also off-then-back unless a separate removal is shown. Under the newest printed assessment or the last printed sale price, 6 once. Motivated remarks, 4. Half up to one decimal. Cap 100. Off the market, a relist under the prior ask, or a pending or contingent sale scores only when that event is dated within the 12 months before this board's fetched date. Older history is ignored. A rent amount in the price history is not a price cut.",
   "listings": [
     {
       "address": "3202 Eisenhauer Rd #702",
@@ -38,9 +38,9 @@
         "cuts": 15.0,
         "dom": 10.0,
         "dropFromFirstAsk": 10.0,
-        "offThenBack": 12,
-        "fellThrough": 12,
-        "motivatedRemarks": 4
+        "offThenBack": 12.0,
+        "fellThrough": 12.0,
+        "motivatedRemarks": 4.0
       }
     },
     {
@@ -72,7 +72,7 @@
         "cuts": 15.0,
         "dom": 10.0,
         "dropFromFirstAsk": 10.0,
-        "fellThrough": 12,
+        "fellThrough": 12.0,
         "underAssessmentOrSale": 6
       }
     },
@@ -105,7 +105,7 @@
         "cuts": 15.0,
         "dom": 2.6,
         "dropFromFirstAsk": 10.0,
-        "offThenBack": 12,
+        "offThenBack": 12.0,
         "underAssessmentOrSale": 6
       }
     },
@@ -137,7 +137,7 @@
         "latestCut": 25.0,
         "cuts": 5.0,
         "dropFromFirstAsk": 10.0,
-        "offThenBack": 12,
+        "offThenBack": 12.0,
         "underAssessmentOrSale": 6
       }
     },
@@ -200,8 +200,8 @@
         "cuts": 15.0,
         "dom": 10.0,
         "dropFromFirstAsk": 10.0,
-        "offThenBack": 12,
-        "relistedLower": 8
+        "offThenBack": 12.0,
+        "motivatedRemarks": 0.0
       }
     },
     {
@@ -264,8 +264,8 @@
         "cuts": 10.0,
         "dom": 2.9,
         "dropFromFirstAsk": 8.0,
-        "offThenBack": 12,
-        "relistedLower": 8,
+        "offThenBack": 12.0,
+        "relistedLower": 8.0,
         "underAssessmentOrSale": 6
       }
     },
@@ -299,7 +299,7 @@
         "dom": 10.0,
         "dropFromFirstAsk": 10.0,
         "underAssessmentOrSale": 6,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       }
     },
     {
@@ -331,7 +331,7 @@
         "cuts": 10.0,
         "dom": 3.8,
         "dropFromFirstAsk": 9.1,
-        "fellThrough": 12,
+        "fellThrough": 12.0,
         "underAssessmentOrSale": 6
       }
     },
@@ -384,18 +384,14 @@
         "One cut on NTREIS #21350992. Redfin prints 1 price drop. +5.0 of 15.",
         "58 days on Redfin. +4.8 of 10.",
         "Down from the Jul 30, 2026 ask of $920,000. That is 3.8% off the original ask. +3.8 of 10.",
-        "Prior listing removed Sep 2, 2025, then this one started Jul 30, 2026. +12.",
-        "Came back at $920,000, under the prior listing's $975,000 ask. +8.",
         "List price is under the 2025 assessment of $1,122,860. The page says this is a Fannie Mae HomePath property. That line is not scored as motivated remarks. +6."
       ],
-      "score": 48.4,
+      "score": 28.4,
       "points": {
         "latestCut": 8.8,
         "cuts": 5.0,
         "dom": 4.8,
         "dropFromFirstAsk": 3.8,
-        "offThenBack": 12,
-        "relistedLower": 8,
         "underAssessmentOrSale": 6
       }
     },
@@ -518,7 +514,7 @@
         "cuts": 10.0,
         "dom": 1.5,
         "dropFromFirstAsk": 8.3,
-        "offThenBack": 12
+        "offThenBack": 12.0
       }
     },
     {
@@ -603,19 +599,15 @@
         "One cut on NTREIS #21366038. +5.0 of 15.",
         "44 days on market. +3.7 of 10.",
         "Down from the Aug 21, 2026 ask of $270,000. That is 1.9% off the original ask. +1.9 of 10.",
-        "Prior listing removed Jul 7, 2025, then this one started Aug 21, 2026. +12.",
-        "Came back at $270,000, under the prior $315,000 ask. +8.",
         "List price is under the 2025 assessment of $295,959. +6.",
         "Header says 1.5 baths. Remarks say 2 bathrooms. Property details say one full and one half."
       ],
-      "score": 40.9,
+      "score": 20.9,
       "points": {
         "latestCut": 4.3,
         "cuts": 5.0,
         "dom": 3.7,
         "dropFromFirstAsk": 1.9,
-        "offThenBack": 12,
-        "relistedLower": 8,
         "underAssessmentOrSale": 6
       }
     },
@@ -648,8 +640,8 @@
         "cuts": 5.0,
         "dom": 5.8,
         "dropFromFirstAsk": 2.7,
-        "fellThrough": 12,
-        "motivatedRemarks": 4
+        "fellThrough": 12.0,
+        "motivatedRemarks": 4.0
       }
     },
     {
@@ -909,8 +901,9 @@
       "score": 20.1,
       "points": {
         "dom": 0.1,
-        "offThenBack": 12,
-        "relistedLower": 8
+        "offThenBack": 12.0,
+        "relistedLower": 8.0,
+        "motivatedRemarks": 0.0
       }
     },
     {
@@ -970,7 +963,8 @@
         "latestCut": 3.3,
         "cuts": 5.0,
         "dom": 6.8,
-        "dropFromFirstAsk": 1.5
+        "dropFromFirstAsk": 1.5,
+        "motivatedRemarks": 0.0
       }
     },
     {
@@ -1054,7 +1048,7 @@
       "score": 6.4,
       "points": {
         "dom": 2.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       }
     },
     {
@@ -1078,14 +1072,14 @@
         "Latest cut is 15.9%, from $95,000 to $79,900 on Sep 10, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 10, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "171 days on Zillow. +10.0 of 10.",
-        "Remarks say \"This cozy 3/1.5 is priced to sell. Located in an established neighborhood and close to schools, shopping & restaurants! Co\" (priced to sell). +4."
+        "Remarks say \"This cozy 3/1.5 is priced to sell. Located in an established neighborhood and close to schools, shopping & restaurants!\" (priced to sell). +4."
       ],
       "score": 44.0,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1110,14 +1104,14 @@
         "Latest cut is 12.8%, from $545,000 to $475,000 on Sep 12, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 12, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "156 days on Zillow. +10.0 of 10.",
-        "Remarks say \"records do not accurately reflect the lot size. Buyer to verify. MOTIVATED SELLERS have made a significant price adjustment, creating an incredible opportunity with\" (motivated). +4."
+        "Remarks say \"Do not accurately reflect the lot size. Buyer to verify. MOTIVATED SELLERS have made a significant price adjustment, creating an incredible opportunity.\" (motivated). +4."
       ],
       "score": 44.0,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1142,14 +1136,14 @@
         "Latest cut is 20.8%, from $120,000 to $95,000 on Sep 15, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 15, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "240 days on Zillow. +10.0 of 10.",
-        "Remarks say \"Opportunity knocks loudly here—sometimes with a hammer. Bring ALL OFFERS! NO ASSIGNMENTS, DOUBLE CLOSES or SUBJECT TO. Tour the property before making an off\" (bring offers). +4."
+        "Remarks say \"Opportunity knocks loudly here—sometimes with a hammer. Bring ALL OFFERS! NO ASSIGNMENTS, DOUBLE CLOSES or SUBJECT TO. Tour the property before making.\" (bring offers). +4."
       ],
       "score": 44.0,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1174,14 +1168,14 @@
         "Latest cut is 10.2%, from $1,280,000 to $1,150,000 on Sep 4, 2026. +23.4 of 25.",
         "The listing page shows one price decrease on Sep 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "197 days on Zillow. +10.0 of 10.",
-        "Remarks say \"rivate peninsula on a non-thru street offering privacy and seclusion. Seller financing is possible.\" (seller financing). +4."
+        "Remarks say \"Peninsula on a non-thru street offering privacy and seclusion. Seller financing is possible.\" (seller financing). +4."
       ],
       "score": 42.4,
       "points": {
         "latestCut": 23.4,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1206,14 +1200,14 @@
         "Latest cut is 12.7%, from $55,000 to $48,000 on Oct 3, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Oct 3, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "96 days on Zillow. +8.0 of 10.",
-        "Remarks say \"its! This spacious home is ready for a complete transformation and is priced to sell! Situated on a large lot in the heart of Hereford, this property offers abundant square f\" (priced to sell). +4."
+        "Remarks say \"This spacious home is ready for a complete transformation and is priced to sell! Situated on a large lot in the heart of Hereford, this property offers abundant square.\" (priced to sell). +4."
       ],
       "score": 42.0,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 8.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1238,14 +1232,14 @@
         "Latest cut is 11.8%, from $255,000 to $225,000 on Sep 24, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 24, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "93 days on Zillow. +7.8 of 10.",
-        "Remarks say \"HUGE PRICE DROP , highly motivated seller needs to move home. Welcome home to this beautiful 3-bedroom, 2-bath home in Forn\" (motivated). +4."
+        "Remarks say \"HUGE PRICE DROP , highly motivated seller needs to move home. Welcome home to this beautiful 3-bedroom, 2-bath home.\" (motivated). +4."
       ],
       "score": 41.8,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 7.8,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1270,14 +1264,14 @@
         "Latest cut is 16.0%, from $249,900 to $209,995 on Sep 20, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 20, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "84 days on Zillow. +7.0 of 10.",
-        "Remarks say \"?? OWNER FINANCING AVAILABLE – ?? Stop renting and start owning! This charming 3-bedroom, 1-bathroom home i\" (owner financing). +4."
+        "Remarks say \"?? OWNER FINANCING AVAILABLE – ?? Stop renting and start owning! This charming 3-bedroom, 1-bathroom home.\" (owner financing). +4."
       ],
       "score": 41.0,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 7.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1302,14 +1296,14 @@
         "Latest cut is 15.7%, from $129,950 to $109,500 on Oct 1, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Oct 1, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "83 days on Zillow. +6.9 of 10.",
-        "Remarks say \"PRICE REDUCED! Looking for an affordable way to become a homeowner? This beautiful 4 bedroom 2 bath man\" (price reduced). +4."
+        "Remarks say \"PRICE REDUCED! Looking for an affordable way to become a homeowner? This beautiful 4 bedroom 2 bath.\" (price reduced). +4."
       ],
       "score": 40.9,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 6.9,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -1334,14 +1328,14 @@
         "Latest cut is 16.7%, from $150,000 to $125,000 on Sep 12, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 12, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "74 days on Zillow. +6.2 of 10.",
-        "Remarks say \"ood entry porches, and excellent curb appeal. Adding even more value, seller financing is available, offering an excellent alternative to traditional lending. Seller will consi\" (seller financing). +4."
+        "Remarks say \"Entry porches, and excellent curb appeal. Adding even more value, seller financing is available, offering an excellent alternative to traditional lending. Seller will.\" (seller financing). +4."
       ],
       "score": 40.2,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 6.2,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -2776,14 +2770,14 @@
         "Latest cut is 21.3%, from $75,000 to $59,000 on Sep 14, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 14, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "73 days on Zillow. +6.1 of 10.",
-        "Remarks say \"ates are about $1000 - $1500 a month but I have three people ready to rent to own if you are interested. This one will need to go down to the studs. Roof is shot and the i\" (rent to own). +4."
+        "Remarks say \"Are about $1000 - $1500 a month but I have three people ready to rent to own if you are interested. This one will need to go down to the studs. Roof is shot and the.\" (rent to own). +4."
       ],
       "score": 40.1,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 6.1,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3048,14 +3042,14 @@
         "Latest cut is 18.2%, from $110,000 to $90,000 on Sep 4, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "67 days on Zillow. +5.6 of 10.",
-        "Remarks say \"s potential then this is it! With solid bones, plenty of space, and a motivated price. This home is perfect for someone ready to make it their own. No HOA , Buyer to ver\" (motivated). +4."
+        "Remarks say \"Potential then this is it! With solid bones, plenty of space, and a motivated price. This home is perfect for someone ready to make it their own. No HOA , Buyer.\" (motivated). +4."
       ],
       "score": 39.6,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 5.6,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3170,14 +3164,14 @@
         "Latest cut is 14.6%, from $369,000 to $315,000 on Sep 8, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 8, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "67 days on Zillow. +5.6 of 10.",
-        "Remarks say \"Historic Galveston Cottage Cash Price: $315,000 | Owner Financing Available Great opportunity to own a charming historic 1892 Galveston cottage in a centra\" (owner financing). +4."
+        "Remarks say \"Historic Galveston Cottage Cash Price: $315,000 | Owner Financing Available Great opportunity to own a charming historic 1892 Galveston cottage.\" (owner financing). +4."
       ],
       "score": 39.6,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 5.6,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3352,14 +3346,14 @@
         "Latest cut is 17.6%, from $182,000 to $150,000 on Sep 25, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 25, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "61 days on Zillow. +5.1 of 10.",
-        "Remarks say \"rsonality and eager to welcome its next owner—and while the seller is motivated to make a deal, they know the true value of this special find! Step inside to discover\" (motivated). +4."
+        "Remarks say \"And eager to welcome its next owner—and while the seller is motivated to make a deal, they know the true value of this special find! Step inside.\" (motivated). +4."
       ],
       "score": 39.1,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 5.1,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3384,14 +3378,14 @@
         "Latest cut is 13.4%, from $300,000 to $259,900 on Sep 14, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 14, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "61 days on Zillow. +5.1 of 10.",
-        "Remarks say \"Motivated! Price enhancement! Bring Offers! Welcome to easy low maintenance living in this gated\" (motivated). +4."
+        "Remarks say \"Motivated! Price enhancement! Bring Offers! Welcome to easy low maintenance living in this.\" (motivated). +4."
       ],
       "score": 39.1,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 5.1,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3596,14 +3590,14 @@
         "Latest cut is 11.4%, from $174,900 to $155,000 on Sep 9, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 9, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "53 days on Zillow. +4.4 of 10.",
-        "Remarks say \"if you need lender referrals for this type of loan. Bring all offers, motivated seller!\" (motivated). +4."
+        "Remarks say \"You need lender referrals for this type of loan. Bring all offers, motivated seller!\" (motivated). +4."
       ],
       "score": 38.4,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 4.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3628,14 +3622,14 @@
         "Latest cut is 10.7%, from $139,900 to $125,000 on Oct 1, 2026. +24.5 of 25.",
         "The listing page shows one price decrease on Oct 1, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "60 days on Zillow. +5.0 of 10.",
-        "Remarks say \"edrooms, large kitchen with ample cabinets, & more to enjoy. Offering Owner financing!\" (owner financing). +4."
+        "Remarks say \"Large kitchen with ample cabinets, & more to enjoy. Offering Owner financing!\" (owner financing). +4."
       ],
       "score": 38.5,
       "points": {
         "latestCut": 24.5,
         "cuts": 5.0,
         "dom": 5.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -3720,14 +3714,14 @@
         "Latest cut is 14.8%, from $135,000 to $115,000 on Sep 15, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 15, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "50 days on Zillow. +4.2 of 10.",
-        "Remarks say \"ellent potential for a rental or investment opportunity. Seller is motivated and open to all offers. Property is priced to sell and must go. Schedule your showing tod\" (motivated). +4."
+        "Remarks say \"Potential for a rental or investment opportunity. Seller is motivated and open to all offers. Property is priced to sell and must go. Schedule your showing.\" (motivated). +4."
       ],
       "score": 38.2,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 4.2,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4022,14 +4016,14 @@
         "Latest cut is 13.6%, from $220,000 to $190,000 on Sep 14, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 14, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "41 days on Zillow. +3.4 of 10.",
-        "Remarks say \"Motivated Seller- Property locate in Buda Texas, easy access to IH35. .44 acres with a mobile home\" (motivated). +4."
+        "Remarks say \"Motivated Seller- Property locate in Buda Texas, easy access to IH35. .44 acres with a mobile.\" (motivated). +4."
       ],
       "score": 37.4,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 3.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4324,14 +4318,14 @@
         "Latest cut is 8.1%, from $185,000 to $170,000 on Sep 29, 2026. +18.6 of 25.",
         "The listing page shows one price decrease on Sep 29, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "115 days on Zillow. +9.6 of 10.",
-        "Remarks say \"a strong opportunity for a first-time buyer, investor, downsizer, or relocation buyer looking for a home with solid fundamentals and major updates already completed.\" (relocation). +4."
+        "Remarks say \"Strong opportunity for a first-time buyer, investor, downsizer, or relocation buyer looking for a home with solid fundamentals and major updates already completed.\" (relocation). +4."
       ],
       "score": 37.2,
       "points": {
         "latestCut": 18.6,
         "cuts": 5.0,
         "dom": 9.6,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4476,14 +4470,14 @@
         "Latest cut is 17.8%, from $219,000 to $179,950 on Sep 14, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 14, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "32 days on Zillow. +2.7 of 10.",
-        "Remarks say \"al features include a fenced backyard and a two car garage. Seller is MOTIVATED -so bring your offers! With the right updates, this HOME has PLENTY of potential to add v\" (motivated). +4."
+        "Remarks say \"Features include a fenced backyard and a two car garage. Seller is MOTIVATED -so bring your offers! With the right updates, this HOME has PLENTY of potential to add.\" (motivated). +4."
       ],
       "score": 36.7,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 2.7,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4598,14 +4592,14 @@
         "Latest cut is 7.6%, from $119,000 to $110,000 on Sep 30, 2026. +17.4 of 25.",
         "The listing page shows one price decrease on Sep 30, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "152 days on Zillow. +10.0 of 10.",
-        "Remarks say \"your own. Seller is reviewing all offers, and will consider doing an owner finance.\" (owner financing). +4."
+        "Remarks say \"Own. Seller is reviewing all offers, and will consider doing an owner finance.\" (owner financing). +4."
       ],
       "score": 36.4,
       "points": {
         "latestCut": 17.4,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4660,14 +4654,14 @@
         "Latest cut is 8.5%, from $174,900 to $160,000 on Sep 24, 2026. +19.6 of 25.",
         "The listing page shows one price decrease on Sep 24, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "95 days on Zillow. +7.9 of 10.",
-        "Remarks say \"Major Price Improvement and Priced to Sell! Check out this charming 3 bedroom 2 bath home! Located on a large corner lot, this home\" (priced to sell). +4."
+        "Remarks say \"Major Price Improvement and Priced to Sell! Check out this charming 3 bedroom 2 bath home! Located on a large corner lot, this.\" (priced to sell). +4."
       ],
       "score": 36.5,
       "points": {
         "latestCut": 19.6,
         "cuts": 5.0,
         "dom": 7.9,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4752,14 +4746,14 @@
         "Latest cut is 13.0%, from $999,000 to $869,000 on Sep 12, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 12, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "26 days on Zillow. +2.2 of 10.",
-        "Remarks say \"PRICE REDUCED $130K! The ONLY single-story home in Heath with a pool on a 1-acre lot under $870,000 Ra\" (price reduced). +4."
+        "Remarks say \"PRICE REDUCED $130K! The ONLY single-story home in Heath with a pool on a 1-acre lot under.\" (price reduced). +4."
       ],
       "score": 36.2,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 2.2,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -4784,14 +4778,14 @@
         "Latest cut is 10.6%, from $235,000 to $210,000 on Oct 3, 2026. +24.5 of 25.",
         "The listing page shows one price decrease on Oct 3, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "33 days on Zillow. +2.8 of 10.",
-        "Remarks say \"\"Motivated Sellers\" Bring Your Offer!! \"See Sellers Disclosure\" Sitting on an expansive 17,000+ squ\" (motivated). +4."
+        "Remarks say \"\"Motivated Sellers\" Bring Your Offer!! \"See Sellers Disclosure\" Sitting on an expansive.\" (motivated). +4."
       ],
       "score": 36.3,
       "points": {
         "latestCut": 24.5,
         "cuts": 5.0,
         "dom": 2.8,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -5176,14 +5170,14 @@
         "Latest cut is 14.3%, from $69,900 to $59,900 on Oct 3, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Oct 3, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "23 days on Zillow. +1.9 of 10.",
-        "Remarks say \"s diamond in the rough back to its glory days! **CASH ONLY, AS IS, NO OWNER FINANCE**\" (owner financing). +4."
+        "Remarks say \"Diamond in the rough back to its glory days! **CASH ONLY, AS IS, NO OWNER.\" (owner financing). +4."
       ],
       "score": 35.9,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 1.9,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -5215,7 +5209,7 @@
         "latestCut": 25.0,
         "cuts": 5.0,
         "dom": 1.8,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -6020,14 +6014,14 @@
         "Latest cut is 6.9%, from $349,000 to $325,000 on Sep 3, 2026. +15.8 of 25.",
         "The listing page shows one price decrease on Sep 3, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "358 days on Zillow. +10.0 of 10.",
-        "Remarks say \"MOTIVATED SELLER SEND ALL OFFERS......Recent updates within the last 5 years. New windows (Window\" (motivated). +4."
+        "Remarks say \"MOTIVATED SELLER SEND ALL OFFERS......Recent updates within the last 5 years. New windows.\" (motivated). +4."
       ],
       "score": 34.8,
       "points": {
         "latestCut": 15.8,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -6382,14 +6376,14 @@
         "Latest cut is 10.0%, from $100,000 to $90,000 on Sep 19, 2026. +23.0 of 25.",
         "The listing page shows one price decrease on Sep 19, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "30 days on Zillow. +2.5 of 10.",
-        "Remarks say \"Investor Special. Open to owner finance. 2 bed 1 bath, 3 car garage. New siding , doors and windows. Ready for you to make finish\" (owner financing). +4."
+        "Remarks say \"Investor Special. Open to owner finance. 2 bed 1 bath, 3 car garage. New siding , doors and windows. Ready for you to make.\" (owner financing). +4."
       ],
       "score": 34.5,
       "points": {
         "latestCut": 23.0,
         "cuts": 5.0,
         "dom": 2.5,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -6744,14 +6738,14 @@
         "Latest cut is 9.1%, from $274,000 to $249,000 on Sep 21, 2026. +21.0 of 25.",
         "The listing page shows one price decrease on Sep 21, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "51 days on Zillow. +4.3 of 10.",
-        "Remarks say \"MOTIVATED SELLER!!! Charming single-story brick home offering 3 bedrooms, 2 bathrooms, and approxim\" (motivated). +4."
+        "Remarks say \"MOTIVATED SELLER!!! Charming single-story brick home offering 3 bedrooms, 2 bathrooms, and.\" (motivated). +4."
       ],
       "score": 34.3,
       "points": {
         "latestCut": 21.0,
         "cuts": 5.0,
         "dom": 4.3,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -6957,13 +6951,13 @@
         "Latest cut is 25.0%, from $160,000 to $120,000 on Sep 18, 2026. +25.0 of 25.",
         "The listing page shows one price decrease on Sep 18, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "Days on Zillow were not printed as a day count, so the days bucket is 0.",
-        "Remarks say \"ented for $700/month, offering immediate cash flow. The other side is vacant and ready for a new tenant or an owner looking to move in. Prime Location! 5 minutes to shopping, r\" (vacant). +4."
+        "Remarks say \"For $700/month, offering immediate cash flow. The other side is vacant and ready for a new tenant or an owner looking to move in. Prime Location! 5 minutes to shopping,.\" (vacant). +4."
       ],
       "score": 44.0,
       "points": {
         "latestCut": 25.0,
         "cuts": 5.0,
-        "motivatedRemarks": 4,
+        "motivatedRemarks": 4.0,
         "dom": 10.0
       },
       "fetched": "2026-10-03"
@@ -8999,14 +8993,14 @@
         "Latest cut is 7.7%, from $1,300,000 to $1,200,000 on Sep 16, 2026. +17.7 of 25.",
         "The listing page shows one price decrease on Sep 16, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "65 days on Zillow. +5.4 of 10.",
-        "Remarks say \"PRICE IMPROVEMENT! Seller motivated and welcoming all offers! Seller will consider an allowance toward buyer-selected paint a\" (motivated). +4."
+        "Remarks say \"PRICE IMPROVEMENT! Seller motivated and welcoming all offers! Seller will consider an allowance toward buyer-selected paint.\" (motivated). +4."
       ],
       "score": 32.1,
       "points": {
         "latestCut": 17.7,
         "cuts": 5.0,
         "dom": 5.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -10471,14 +10465,14 @@
         "Latest cut is 8.7%, from $875,000 to $799,000 on Sep 25, 2026. +20.0 of 25.",
         "The listing page shows one price decrease on Sep 25, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "17 days on Zillow. +1.4 of 10.",
-        "Remarks say \"family and friends. This is a true turnkey opportunity for buyers relocating to North Dallas who want a home with nothing left to do but move in. Located in Frisco's\" (relocation). +4."
+        "Remarks say \"And friends. This is a true turnkey opportunity for buyers relocating to North Dallas who want a home with nothing left to do but move in. Located.\" (relocation). +4."
       ],
       "score": 30.4,
       "points": {
         "latestCut": 20.0,
         "cuts": 5.0,
         "dom": 1.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -10832,14 +10826,14 @@
         "Latest cut is 8.0%, from $435,000 to $400,000 on Sep 25, 2026. +18.5 of 25.",
         "The listing page shows one price decrease on Sep 25, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "27 days on Zillow. +2.3 of 10.",
-        "Remarks say \"Motivated seller — brand new carpet and fresh paint just completed in two guest bedrooms! Welcom\" (motivated). +4."
+        "Remarks say \"Motivated seller — brand new carpet and fresh paint just completed in two guest bedrooms!\" (motivated). +4."
       ],
       "score": 29.8,
       "points": {
         "latestCut": 18.5,
         "cuts": 5.0,
         "dom": 2.3,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -11164,14 +11158,14 @@
         "Latest cut is 5.5%, from $375,000 to $354,400 on Sep 4, 2026. +12.6 of 25.",
         "The listing page shows one price decrease on Sep 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "89 days on Zillow. +7.4 of 10.",
-        "Remarks say \"put in the work for the home this is a wonderful opportunity for you. Priced to sell so come out and see it for yourself. Please just make sure you schedule ahead of time. We\" (priced to sell). +4."
+        "Remarks say \"In the work for the home this is a wonderful opportunity for you. Priced to sell so come out and see it for yourself. Please just make sure you schedule ahead of time.\" (priced to sell). +4."
       ],
       "score": 29.0,
       "points": {
         "latestCut": 12.6,
         "cuts": 5.0,
         "dom": 7.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -11736,14 +11730,14 @@
         "Latest cut is 7.1%, from $1,399,000 to $1,299,000 on Sep 15, 2026. +16.4 of 25.",
         "The listing page shows one price decrease on Sep 15, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "29 days on Zillow. +2.4 of 10.",
-        "Remarks say \"Priced to sell. Welcome to 400 Winding Ridge Trail, an exceptional luxury residence on an oversized quar\" (priced to sell). +4."
+        "Remarks say \"Priced to sell. Welcome to 400 Winding Ridge Trail, an exceptional luxury residence on an oversized.\" (priced to sell). +4."
       ],
       "score": 27.8,
       "points": {
         "latestCut": 16.4,
         "cuts": 5.0,
         "dom": 2.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -11888,14 +11882,14 @@
         "Latest cut is 3.7%, from $674,900 to $649,900 on Sep 10, 2026. +8.5 of 25.",
         "The listing page shows one price decrease on Sep 10, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "210 days on Zillow. +10.0 of 10.",
-        "Remarks say \"Seller is downsizing - Bring all offers! Where wide-open land meets thoughtful design, this custom-built retreat delivers space,\" (bring offers). +4."
+        "Remarks say \"Seller is downsizing - Bring all offers! Where wide-open land meets thoughtful design, this custom-built retreat delivers.\" (bring offers). +4."
       ],
       "score": 27.5,
       "points": {
         "latestCut": 8.5,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -12040,14 +12034,14 @@
         "Latest cut is 3.4%, from $699,000 to $674,999 on Oct 2, 2026. +7.9 of 25.",
         "The listing page shows one price decrease on Oct 2, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "362 days on Zillow. +10.0 of 10.",
-        "Remarks say \"NEW PRICE & SELLER IS MOTIVATED!! Enjoy waterfront living on beautiful Lake Placid with full river access, expansive wate\" (motivated). +4."
+        "Remarks say \"NEW PRICE & SELLER IS MOTIVATED!! Enjoy waterfront living on beautiful Lake Placid with full river access, expansive.\" (motivated). +4."
       ],
       "score": 26.9,
       "points": {
         "latestCut": 7.9,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -12643,14 +12637,14 @@
         "Latest cut is 6.3%, from $159,000 to $149,000 on Oct 2, 2026. +14.5 of 25.",
         "The listing page shows one price decrease on Oct 2, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "26 days on Zillow. +2.2 of 10.",
-        "Remarks say \"lan with modern finishes throughout. Large yard with a privacy fence. Priced to sell. Schedule your showing today.\" (priced to sell). +4."
+        "Remarks say \"With modern finishes throughout. Large yard with a privacy fence. Priced to sell. Schedule your showing today.\" (priced to sell). +4."
       ],
       "score": 25.7,
       "points": {
         "latestCut": 14.5,
         "cuts": 5.0,
         "dom": 2.2,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -12916,14 +12910,14 @@
         "Latest cut is 5.5%, from $55,000 to $52,000 on Sep 16, 2026. +12.5 of 25.",
         "The listing page shows one price decrease on Sep 16, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "41 days on Zillow. +3.4 of 10.",
-        "Remarks say \"STOR SPECIAL, HOUSE IS ONLY 30 YRS OLD. COULD USE A COMPLETE UPGRADE. Motivated Seller\" (motivated). +4."
+        "Remarks say \"STOR SPECIAL, HOUSE IS ONLY 30 YRS OLD. COULD USE A COMPLETE UPGRADE. Motivated.\" (motivated). +4."
       ],
       "score": 24.9,
       "points": {
         "latestCut": 12.5,
         "cuts": 5.0,
         "dom": 3.4,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -13188,14 +13182,14 @@
         "Latest cut is 2.3%, from $609,000 to $595,000 on Sep 19, 2026. +5.3 of 25.",
         "The listing page shows one price decrease on Sep 19, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "177 days on Zillow. +10.0 of 10.",
-        "Remarks say \"Motivated Seller! Rare opportunity in Brock, Texas to own a true multi-generational family home in\" (motivated). +4."
+        "Remarks say \"Motivated Seller! Rare opportunity in Brock, Texas to own a true multi-generational family home.\" (motivated). +4."
       ],
       "score": 24.3,
       "points": {
         "latestCut": 5.3,
         "cuts": 5.0,
         "dom": 10.0,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -13280,14 +13274,14 @@
         "Latest cut is 5.1%, from $295,000 to $280,000 on Sep 18, 2026. +11.7 of 25.",
         "The listing page shows one price decrease on Sep 18, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "38 days on Zillow. +3.2 of 10.",
-        "Remarks say \"of Austin, Bastrop, and Lockhart with easy access to major highways. Seller financing is available, making this incredible opportunity even more accessible. Schedule your show\" (seller financing). +4."
+        "Remarks say \"Austin, Bastrop, and Lockhart with easy access to major highways. Seller financing is available, making this incredible opportunity even more accessible. Schedule your.\" (seller financing). +4."
       ],
       "score": 23.9,
       "points": {
         "latestCut": 11.7,
         "cuts": 5.0,
         "dom": 3.2,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -14122,14 +14116,14 @@
         "Latest cut is 4.4%, from $312,125 to $298,500 on Oct 1, 2026. +10.0 of 25.",
         "The listing page shows one price decrease on Oct 1, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "30 days on Zillow. +2.5 of 10.",
-        "Remarks say \"PRICE REDUCED! This Home Is In One of Dumas's Most Sought After Neighborhoods. The Longtime Owners Hav\" (price reduced). +4."
+        "Remarks say \"PRICE REDUCED! This Home Is In One of Dumas's Most Sought After Neighborhoods. The Longtime Owners.\" (price reduced). +4."
       ],
       "score": 21.5,
       "points": {
         "latestCut": 10.0,
         "cuts": 5.0,
         "dom": 2.5,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -15087,14 +15081,14 @@
         "Latest cut is 2.3%, from $199,500 to $194,900 on Oct 3, 2026. +5.3 of 25.",
         "The listing page shows one price decrease on Oct 3, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "32 days on Zillow. +2.7 of 10.",
-        "Remarks say \"MOTIVATED SELLER Vacation rental property ? Full-time residence ? Weekend get-away-spot. ? Fishing\" (motivated). +4."
+        "Remarks say \"MOTIVATED SELLER Vacation rental property ? Full-time residence ? Weekend get-away-spot.\" (motivated). +4."
       ],
       "score": 17.0,
       "points": {
         "latestCut": 5.3,
         "cuts": 5.0,
         "dom": 2.7,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -15270,14 +15264,14 @@
         "Latest cut is 1.5%, from $657,000 to $647,000 on Sep 17, 2026. +3.5 of 25.",
         "The listing page shows one price decrease on Sep 17, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
         "44 days on Zillow. +3.7 of 10.",
-        "Remarks say \"ocated right in the heart of Taylor, Texas, this exceptional property priced to sell sits within the coveted Thrall ISD. Enjoy peaceful country views while remaining just min\" (priced to sell). +4."
+        "Remarks say \"Right in the heart of Taylor, Texas, this exceptional property priced to sell sits within the coveted Thrall ISD. Enjoy peaceful country views while remaining just.\" (priced to sell). +4."
       ],
       "score": 16.2,
       "points": {
         "latestCut": 3.5,
         "cuts": 5.0,
         "dom": 3.7,
-        "motivatedRemarks": 4
+        "motivatedRemarks": 4.0
       },
       "fetched": "2026-10-03"
     },
@@ -16229,35 +16223,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "Medina (3011) Plan, Comanche Ridge",
-      "city": "San Antonio",
-      "zip": "78233",
-      "price": 389990,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2403,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 7.1,
-      "dom": 1,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/comanche-ridge/347775025_zpid/",
-      "source": "Zillow",
-      "zpid": "347775025",
-      "reasons": [
-        "Latest cut is 7.1%, from $419,990 to $389,990 on Oct 4, 2026. +16.4 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "1 days on Zillow. +0.1 of 10."
-      ],
-      "score": 21.5,
-      "points": {
-        "latestCut": 16.4,
-        "cuts": 5.0,
-        "dom": 0.1
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "8934 Branding Fld",
       "city": "San Antonio",
       "zip": "78240",
@@ -16544,93 +16509,6 @@
         "latestCut": 5.8,
         "cuts": 5.0,
         "dom": 6.7
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Ian Plan, Stonehaven",
-      "city": "Seagoville",
-      "zip": "75159",
-      "price": 329908,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2363,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 4.3,
-      "dom": 33,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/stonehaven/459782584_zpid/",
-      "source": "Zillow",
-      "zpid": "459782584",
-      "reasons": [
-        "Latest cut is 4.3%, from $344,703 to $329,908 on Oct 4, 2026. +9.9 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "33 days on Zillow. +2.8 of 10."
-      ],
-      "score": 17.7,
-      "points": {
-        "latestCut": 9.9,
-        "cuts": 5.0,
-        "dom": 2.8
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Royal Plan, Stonehaven",
-      "city": "Seagoville",
-      "zip": "75159",
-      "price": 359251,
-      "beds": 5,
-      "baths": 3,
-      "sqft": 2791,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 2.9,
-      "dom": 65,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/stonehaven/459690071_zpid/",
-      "source": "Zillow",
-      "zpid": "459690071",
-      "reasons": [
-        "Latest cut is 2.9%, from $369,931 to $359,251 on Oct 4, 2026. +6.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "65 days on Zillow. +5.4 of 10."
-      ],
-      "score": 17.0,
-      "points": {
-        "latestCut": 6.6,
-        "cuts": 5.0,
-        "dom": 5.4
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Woodside Plan, Stonehaven",
-      "city": "Seagoville",
-      "zip": "75159",
-      "price": 379466,
-      "beds": 4,
-      "baths": 4,
-      "sqft": 3060,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.9,
-      "dom": 56,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/stonehaven/440004212_zpid/",
-      "source": "Zillow",
-      "zpid": "440004212",
-      "reasons": [
-        "Latest cut is 0.9%, from $383,066 to $379,466 on Oct 4, 2026. +2.2 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "56 days on Zillow. +4.7 of 10."
-      ],
-      "score": 11.9,
-      "points": {
-        "latestCut": 2.2,
-        "cuts": 5.0,
-        "dom": 4.7
       },
       "fetched": "2026-10-05"
     },
@@ -17911,35 +17789,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "The Preston (C403) Plan, Kingdom Heights",
-      "city": "Rosenberg",
-      "zip": "77471",
-      "price": 348990,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2045,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 1.2,
-      "dom": 50,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/kingdom-heights/462654163_zpid/",
-      "source": "Zillow",
-      "zpid": "462654163",
-      "reasons": [
-        "Latest cut is 1.2%, from $353,200 to $348,990 on Oct 5, 2026. +2.7 of 25.",
-        "The search list shows one price cut on Oct 5, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "50 days on Zillow. +4.2 of 10."
-      ],
-      "score": 11.9,
-      "points": {
-        "latestCut": 2.7,
-        "cuts": 5.0,
-        "dom": 4.2
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "6106 Laguna Del Rey Dr",
       "city": "Houston",
       "zip": "77041",
@@ -18632,64 +18481,6 @@
         "latestCut": 8.0,
         "cuts": 5.0,
         "dom": 10.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Callaghan (830) Plan, Lark Canyon",
-      "city": "New Braunfels",
-      "zip": "78132",
-      "price": 369990,
-      "beds": 4,
-      "baths": 2,
-      "sqft": 1738,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 2.6,
-      "dom": 56,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/lark-canyon/457671444_zpid/",
-      "source": "Zillow",
-      "zpid": "457671444",
-      "reasons": [
-        "Latest cut is 2.6%, from $379,990 to $369,990 on Oct 4, 2026. +6.1 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "56 days on Zillow. +4.7 of 10."
-      ],
-      "score": 15.8,
-      "points": {
-        "latestCut": 6.1,
-        "cuts": 5.0,
-        "dom": 4.7
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Briscoe (820) Plan, Lark Canyon",
-      "city": "New Braunfels",
-      "zip": "78132",
-      "price": 359990,
-      "beds": 3,
-      "baths": 2,
-      "sqft": 1522,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 1.6,
-      "dom": 50,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/lark-canyon/456974819_zpid/",
-      "source": "Zillow",
-      "zpid": "456974819",
-      "reasons": [
-        "Latest cut is 1.6%, from $365,990 to $359,990 on Oct 4, 2026. +3.8 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "50 days on Zillow. +4.2 of 10."
-      ],
-      "score": 13.0,
-      "points": {
-        "latestCut": 3.8,
-        "cuts": 5.0,
-        "dom": 4.2
       },
       "fetched": "2026-10-05"
     },
@@ -19536,7 +19327,7 @@
     },
     {
       "address": "16020 Harrison Rd",
-      "city": "EL PASO",
+      "city": "El Paso",
       "zip": "79928",
       "price": 315900,
       "beds": 4,
@@ -19883,35 +19674,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "Peyton Plan, Crescent Bluff",
-      "city": "Georgetown",
-      "zip": "78628",
-      "price": 544990,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2442,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 10.5,
-      "dom": 23,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/crescent-bluff/464183700_zpid/",
-      "source": "Zillow",
-      "zpid": "464183700",
-      "reasons": [
-        "Latest cut is 10.5%, from $609,221 to $544,990 on Oct 4, 2026. +24.2 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "23 days on Zillow. +1.9 of 10."
-      ],
-      "score": 31.1,
-      "points": {
-        "latestCut": 24.2,
-        "cuts": 5.0,
-        "dom": 1.9
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "2000 Peck St",
       "city": "Glenn Heights",
       "zip": "75154",
@@ -20053,35 +19815,6 @@
         "latestCut": 2.0,
         "cuts": 5.0,
         "dom": 6.4
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Kessler (C454) Plan, Butler Farms - Boulevard Collection",
-      "city": "Liberty Hill",
-      "zip": "78642",
-      "price": 431990,
-      "beds": 5,
-      "baths": 3,
-      "sqft": 2966,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 8.3,
-      "dom": 47,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/butler-farms-boulevard-collection/460059512_zpid/",
-      "source": "Zillow",
-      "zpid": "460059512",
-      "reasons": [
-        "Latest cut is 8.3%, from $470,990 to $431,990 on Oct 4, 2026. +19.0 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "47 days on Zillow. +3.9 of 10."
-      ],
-      "score": 27.9,
-      "points": {
-        "latestCut": 19.0,
-        "cuts": 5.0,
-        "dom": 3.9
       },
       "fetched": "2026-10-05"
     },
@@ -20695,35 +20428,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "The Mckinnon (C451) Plan, Legendary Trails - Classic Series",
-      "city": "Cibolo",
-      "zip": "78108",
-      "price": 424990,
-      "beds": 3,
-      "baths": 3,
-      "sqft": 2505,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.2,
-      "dom": 20,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/legendary-trails-classic-series/2071206215_zpid/",
-      "source": "Zillow",
-      "zpid": "2071206215",
-      "reasons": [
-        "Latest cut is 0.2%, from $425,990 to $424,990 on Oct 4, 2026. +0.5 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "20 days on Zillow. +1.7 of 10."
-      ],
-      "score": 7.2,
-      "points": {
-        "latestCut": 0.5,
-        "cuts": 5.0,
-        "dom": 1.7
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "1195 Lazar Dr",
       "city": "Eagle Pass",
       "zip": "78852",
@@ -20952,93 +20656,6 @@
         "latestCut": 7.0,
         "cuts": 5.0,
         "dom": 10.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Lexington Plan, Wilson Creek Meadows",
-      "city": "Celina",
-      "zip": "75009",
-      "price": 585810,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 3284,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.2,
-      "dom": 61,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/wilson-creek-meadows/465144291_zpid/",
-      "source": "Zillow",
-      "zpid": "465144291",
-      "reasons": [
-        "Latest cut is 0.2%, from $586,810 to $585,810 on Oct 4, 2026. +0.4 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "61 days on Zillow. +5.1 of 10."
-      ],
-      "score": 10.5,
-      "points": {
-        "latestCut": 0.4,
-        "cuts": 5.0,
-        "dom": 5.1
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Riverdale Plan, Wilson Creek Meadows",
-      "city": "Celina",
-      "zip": "75009",
-      "price": 544390,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2792,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.1,
-      "dom": 9,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/wilson-creek-meadows/465144297_zpid/",
-      "source": "Zillow",
-      "zpid": "465144297",
-      "reasons": [
-        "Latest cut is 0.1%, from $544,990 to $544,390 on Oct 4, 2026. +0.3 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "9 days on Zillow. +0.8 of 10."
-      ],
-      "score": 6.1,
-      "points": {
-        "latestCut": 0.3,
-        "cuts": 5.0,
-        "dom": 0.8
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Riverdale Plan, Pinnacle At Legacy Hills",
-      "city": "Celina",
-      "zip": "75009",
-      "price": 489080,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2792,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.0,
-      "dom": 16,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/pinnacle-at-legacy-hills/402519062_zpid/",
-      "source": "Zillow",
-      "zpid": "402519062",
-      "reasons": [
-        "Latest cut is 0.0%, from $489,120 to $489,080 on Oct 4, 2026. +0.0 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "16 days on Zillow. +1.3 of 10."
-      ],
-      "score": 6.3,
-      "points": {
-        "latestCut": 0.0,
-        "cuts": 5.0,
-        "dom": 1.3
       },
       "fetched": "2026-10-05"
     },
@@ -23160,35 +22777,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "The Henderson Plan, Westmoor",
-      "city": "Sherman",
-      "zip": "75092",
-      "price": 346700,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2260,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 9.4,
-      "dom": 48,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/westmoor/417729714_zpid/",
-      "source": "Zillow",
-      "zpid": "417729714",
-      "reasons": [
-        "Latest cut is 9.4%, from $382,700 to $346,700 on Oct 4, 2026. +21.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "48 days on Zillow. +4.0 of 10."
-      ],
-      "score": 30.6,
-      "points": {
-        "latestCut": 21.6,
-        "cuts": 5.0,
-        "dom": 4.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "725 Purdue Dr",
       "city": "Tyler",
       "zip": "75703",
@@ -24245,35 +23833,6 @@
       "cutPercent": 4.2,
       "dom": 108,
       "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/homedetails/11010-Pinkery-Ky-Converse-TX-78109/2067327233_zpid/",
-      "source": "Zillow",
-      "zpid": "2067327233",
-      "reasons": [
-        "Latest cut is 4.2%, from $240,000 to $230,000 on Oct 4, 2026. +9.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "108 days on Zillow. +9.0 of 10."
-      ],
-      "score": 23.6,
-      "points": {
-        "latestCut": 9.6,
-        "cuts": 5.0,
-        "dom": 9.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "11010 Pinkery Ky",
-      "city": "Converse",
-      "zip": "78109",
-      "price": 230000,
-      "beds": 3,
-      "baths": 2,
-      "sqft": 1525,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 4.2,
-      "dom": 108,
-      "domSource": "days on Zillow",
       "url": "https://www.zillow.com/homedetails/11010-Pinkery-Ky-Converse-TX-78109/440279754_zpid/",
       "source": "Zillow",
       "zpid": "440279754",
@@ -24813,35 +24372,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "The Reynolds (890) Plan, Prairie Winds - Reserve Collection",
-      "city": "Hutto",
-      "zip": "78634",
-      "price": 398990,
-      "beds": 5,
-      "baths": 3,
-      "sqft": 2812,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 7.4,
-      "dom": 0,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/prairie-winds-reserve-collection/457020009_zpid/",
-      "source": "Zillow",
-      "zpid": "457020009",
-      "reasons": [
-        "Latest cut is 7.4%, from $430,990 to $398,990 on Oct 4, 2026. +17.1 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "0 days on Zillow. +0.0 of 10."
-      ],
-      "score": 22.1,
-      "points": {
-        "latestCut": 17.1,
-        "cuts": 5.0,
-        "dom": 0.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "150 Evangeline Ln",
       "city": "Hutto",
       "zip": "78634",
@@ -24867,35 +24397,6 @@
         "latestCut": 14.4,
         "cuts": 5.0,
         "dom": 10.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Frontier (560) Plan, Prairie Winds - Executive Collection",
-      "city": "Hutto",
-      "zip": "78634",
-      "price": 493990,
-      "beds": 5,
-      "baths": 4,
-      "sqft": 3269,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 4.3,
-      "dom": 28,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/prairie-winds-executive-collection/457020012_zpid/",
-      "source": "Zillow",
-      "zpid": "457020012",
-      "reasons": [
-        "Latest cut is 4.3%, from $515,990 to $493,990 on Oct 4, 2026. +9.8 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "28 days on Zillow. +2.3 of 10."
-      ],
-      "score": 17.1,
-      "points": {
-        "latestCut": 9.8,
-        "cuts": 5.0,
-        "dom": 2.3
       },
       "fetched": "2026-10-05"
     },
@@ -24954,64 +24455,6 @@
         "latestCut": 13.3,
         "cuts": 5.0,
         "dom": 5.7
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Callaghan (830) Plan, Prairie Winds - Reserve Collection",
-      "city": "Hutto",
-      "zip": "78634",
-      "price": 340990,
-      "beds": 4,
-      "baths": 2,
-      "sqft": 1688,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 12.1,
-      "dom": 7,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/prairie-winds-reserve-collection/457020011_zpid/",
-      "source": "Zillow",
-      "zpid": "457020011",
-      "reasons": [
-        "Latest cut is 12.1%, from $387,990 to $340,990 on Oct 4, 2026. +25.0 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "7 days on Zillow. +0.6 of 10."
-      ],
-      "score": 30.6,
-      "points": {
-        "latestCut": 25.0,
-        "cuts": 5.0,
-        "dom": 0.6
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Revere (570) Plan, Prairie Winds - Executive Collection",
-      "city": "Hutto",
-      "zip": "78634",
-      "price": 516990,
-      "beds": 5,
-      "baths": 4,
-      "sqft": 3357,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 1.1,
-      "dom": 36,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/prairie-winds-executive-collection/457020024_zpid/",
-      "source": "Zillow",
-      "zpid": "457020024",
-      "reasons": [
-        "Latest cut is 1.1%, from $522,990 to $516,990 on Oct 4, 2026. +2.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "36 days on Zillow. +3.0 of 10."
-      ],
-      "score": 10.6,
-      "points": {
-        "latestCut": 2.6,
-        "cuts": 5.0,
-        "dom": 3.0
       },
       "fetched": "2026-10-05"
     },
@@ -26263,35 +25706,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "The Winedale (880) Plan, Lexington Parke",
-      "city": "Del Valle",
-      "zip": "78617",
-      "price": 388990,
-      "beds": 5,
-      "baths": 3,
-      "sqft": 2585,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 7.6,
-      "dom": 66,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/lexington-parke/447307114_zpid/",
-      "source": "Zillow",
-      "zpid": "447307114",
-      "reasons": [
-        "Latest cut is 7.6%, from $420,990 to $388,990 on Oct 4, 2026. +17.5 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "66 days on Zillow. +5.5 of 10."
-      ],
-      "score": 28.0,
-      "points": {
-        "latestCut": 17.5,
-        "cuts": 5.0,
-        "dom": 5.5
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "1233 Kathryn St",
       "city": "Hurst",
       "zip": "76053",
@@ -26491,64 +25905,6 @@
         "latestCut": 7.0,
         "cuts": 5.0,
         "dom": 8.3
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Independence Plan, Lakehaven - Premier Series",
-      "city": "Farmersville",
-      "zip": "75442",
-      "price": 326378,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2061,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 2.8,
-      "dom": 1,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/lakehaven-premier-series/2057372050_zpid/",
-      "source": "Zillow",
-      "zpid": "2057372050",
-      "reasons": [
-        "Latest cut is 2.8%, from $335,878 to $326,378 on Oct 4, 2026. +6.5 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "1 days on Zillow. +0.1 of 10."
-      ],
-      "score": 11.6,
-      "points": {
-        "latestCut": 6.5,
-        "cuts": 5.0,
-        "dom": 0.1
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Providence Plan, Lakehaven - Premier Series",
-      "city": "Farmersville",
-      "zip": "75442",
-      "price": 349987,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2426,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 2.0,
-      "dom": 55,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/lakehaven-premier-series/2057372055_zpid/",
-      "source": "Zillow",
-      "zpid": "2057372055",
-      "reasons": [
-        "Latest cut is 2.0%, from $357,198 to $349,987 on Oct 4, 2026. +4.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "55 days on Zillow. +4.6 of 10."
-      ],
-      "score": 14.2,
-      "points": {
-        "latestCut": 4.6,
-        "cuts": 5.0,
-        "dom": 4.6
       },
       "fetched": "2026-10-05"
     },
@@ -27264,35 +26620,6 @@
       "url": "https://www.zillow.com/homedetails/1100-Stone-Ridge-Ln-Desoto-TX-75115/96513011_zpid/",
       "source": "Zillow",
       "zpid": "96513011",
-      "reasons": [
-        "Latest cut is 6.7%, from $889,000 to $829,000 on Oct 5, 2026. +15.5 of 25.",
-        "The search list shows one price cut on Oct 5, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "57 days on Zillow. +4.8 of 10."
-      ],
-      "score": 25.3,
-      "points": {
-        "latestCut": 15.5,
-        "cuts": 5.0,
-        "dom": 4.8
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "1100 Stone Ridge Ln",
-      "city": "Desoto",
-      "zip": "75115",
-      "price": 829000,
-      "beds": 4,
-      "baths": 5,
-      "sqft": 4693,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 6.7,
-      "dom": 57,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/homedetails/1100-Stone-Ridge-Ln-Desoto-TX-75115/248831898_zpid/",
-      "source": "Zillow",
-      "zpid": "248831898",
       "reasons": [
         "Latest cut is 6.7%, from $889,000 to $829,000 on Oct 5, 2026. +15.5 of 25.",
         "The search list shows one price cut on Oct 5, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
@@ -28351,64 +27678,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "The Somerville (3L16) Plan, Massey Oaks Village",
-      "city": "Pearland",
-      "zip": "77584",
-      "price": 376290,
-      "beds": 4,
-      "baths": 4,
-      "sqft": 2521,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 2.3,
-      "dom": 34,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/massey-oaks-village/460470639_zpid/",
-      "source": "Zillow",
-      "zpid": "460470639",
-      "reasons": [
-        "Latest cut is 2.3%, from $385,290 to $376,290 on Oct 4, 2026. +5.4 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "34 days on Zillow. +2.8 of 10."
-      ],
-      "score": 13.2,
-      "points": {
-        "latestCut": 5.4,
-        "cuts": 5.0,
-        "dom": 2.8
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Mooreville Plan, Highland Lakes",
-      "city": "McKinney",
-      "zip": "75071",
-      "price": 593900,
-      "beds": 3,
-      "baths": 3,
-      "sqft": 2640,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 1.0,
-      "dom": 0,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/highland-lakes/441127679_zpid/",
-      "source": "Zillow",
-      "zpid": "441127679",
-      "reasons": [
-        "Latest cut is 1.0%, from $599,990 to $593,900 on Oct 4, 2026. +2.3 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "0 days on Zillow. +0.0 of 10."
-      ],
-      "score": 7.3,
-      "points": {
-        "latestCut": 2.3,
-        "cuts": 5.0,
-        "dom": 0.0
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "5035 Bryn Mawr Dr",
       "city": "McKinney",
       "zip": "75072",
@@ -28641,35 +27910,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "Lexington Plan, Highland Lakes",
-      "city": "McKinney",
-      "zip": "75071",
-      "price": 649410,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 3281,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.1,
-      "dom": 58,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/highland-lakes/441127680_zpid/",
-      "source": "Zillow",
-      "zpid": "441127680",
-      "reasons": [
-        "Latest cut is 0.1%, from $649,990 to $649,410 on Oct 4, 2026. +0.2 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "58 days on Zillow. +4.8 of 10."
-      ],
-      "score": 10.0,
-      "points": {
-        "latestCut": 0.2,
-        "cuts": 5.0,
-        "dom": 4.8
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "12317 Token Trl",
       "city": "Elgin",
       "zip": "78621",
@@ -28815,151 +28055,6 @@
       "fetched": "2026-10-05"
     },
     {
-      "address": "Wyatt Plan, The Grove At Blackhawk",
-      "city": "Pflugerville",
-      "zip": "78660",
-      "price": 645770,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2700,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 3.7,
-      "dom": 4,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/grove-at-blackhawk/462471319_zpid/",
-      "source": "Zillow",
-      "zpid": "462471319",
-      "reasons": [
-        "Latest cut is 3.7%, from $670,770 to $645,770 on Oct 4, 2026. +8.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "4 days on Zillow. +0.3 of 10."
-      ],
-      "score": 13.9,
-      "points": {
-        "latestCut": 8.6,
-        "cuts": 5.0,
-        "dom": 0.3
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Draco Plan, The Grove At Blackhawk",
-      "city": "Pflugerville",
-      "zip": "78660",
-      "price": 669262,
-      "beds": 4,
-      "baths": 4,
-      "sqft": 2846,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 1.0,
-      "dom": 67,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/grove-at-blackhawk/462470992_zpid/",
-      "source": "Zillow",
-      "zpid": "462470992",
-      "reasons": [
-        "Latest cut is 1.0%, from $676,263 to $669,262 on Oct 4, 2026. +2.4 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "67 days on Zillow. +5.6 of 10."
-      ],
-      "score": 13.0,
-      "points": {
-        "latestCut": 2.4,
-        "cuts": 5.0,
-        "dom": 5.6
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Cole Plan, The Grove At Blackhawk",
-      "city": "Pflugerville",
-      "zip": "78660",
-      "price": 644885,
-      "beds": 5,
-      "baths": 5,
-      "sqft": 3033,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.6,
-      "dom": 27,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/grove-at-blackhawk/462471130_zpid/",
-      "source": "Zillow",
-      "zpid": "462471130",
-      "reasons": [
-        "Latest cut is 0.6%, from $649,086 to $644,885 on Oct 4, 2026. +1.5 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "27 days on Zillow. +2.3 of 10."
-      ],
-      "score": 8.8,
-      "points": {
-        "latestCut": 1.5,
-        "cuts": 5.0,
-        "dom": 2.3
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Silas Plan, The Grove At Blackhawk",
-      "city": "Pflugerville",
-      "zip": "78660",
-      "price": 649972,
-      "beds": 4,
-      "baths": 4,
-      "sqft": 2988,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.8,
-      "dom": 50,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/grove-at-blackhawk/462471144_zpid/",
-      "source": "Zillow",
-      "zpid": "462471144",
-      "reasons": [
-        "Latest cut is 0.8%, from $655,373 to $649,972 on Oct 4, 2026. +1.9 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "50 days on Zillow. +4.2 of 10."
-      ],
-      "score": 11.1,
-      "points": {
-        "latestCut": 1.9,
-        "cuts": 5.0,
-        "dom": 4.2
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Malia Plan, The Grove At Blackhawk",
-      "city": "Pflugerville",
-      "zip": "78660",
-      "price": 615940,
-      "beds": 4,
-      "baths": 4,
-      "sqft": 2626,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 1.5,
-      "dom": 11,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/grove-at-blackhawk/462471070_zpid/",
-      "source": "Zillow",
-      "zpid": "462471070",
-      "reasons": [
-        "Latest cut is 1.5%, from $625,541 to $615,940 on Oct 4, 2026. +3.5 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "11 days on Zillow. +0.9 of 10."
-      ],
-      "score": 9.4,
-      "points": {
-        "latestCut": 3.5,
-        "cuts": 5.0,
-        "dom": 0.9
-      },
-      "fetched": "2026-10-05"
-    },
-    {
       "address": "393 County Road 62",
       "city": "Jasper",
       "zip": "75951",
@@ -29101,122 +28196,6 @@
         "latestCut": 0.8,
         "cuts": 5.0,
         "dom": 5.5
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Mooreville Plan, Anna Town Square",
-      "city": "Anna",
-      "zip": "75409",
-      "price": 484090,
-      "beds": 3,
-      "baths": 3,
-      "sqft": 2640,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 2.2,
-      "dom": 71,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/anna-town-square/2056452452_zpid/",
-      "source": "Zillow",
-      "zpid": "2056452452",
-      "reasons": [
-        "Latest cut is 2.2%, from $494,990 to $484,090 on Oct 4, 2026. +5.1 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "71 days on Zillow. +5.9 of 10."
-      ],
-      "score": 16.0,
-      "points": {
-        "latestCut": 5.1,
-        "cuts": 5.0,
-        "dom": 5.9
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Riverdale Plan, Anna Town Square",
-      "city": "Anna",
-      "zip": "75409",
-      "price": 474130,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2792,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.2,
-      "dom": 46,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/anna-town-square/455629759_zpid/",
-      "source": "Zillow",
-      "zpid": "455629759",
-      "reasons": [
-        "Latest cut is 0.2%, from $474,990 to $474,130 on Oct 4, 2026. +0.4 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "46 days on Zillow. +3.8 of 10."
-      ],
-      "score": 9.2,
-      "points": {
-        "latestCut": 0.4,
-        "cuts": 5.0,
-        "dom": 3.8
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "Lawson Plan, Anna Town Square",
-      "city": "Anna",
-      "zip": "75409",
-      "price": 528920,
-      "beds": 4,
-      "baths": 4,
-      "sqft": 3655,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 0.1,
-      "dom": 38,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/anna-town-square/2056452439_zpid/",
-      "source": "Zillow",
-      "zpid": "2056452439",
-      "reasons": [
-        "Latest cut is 0.1%, from $529,340 to $528,920 on Oct 4, 2026. +0.2 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "38 days on Zillow. +3.2 of 10."
-      ],
-      "score": 8.4,
-      "points": {
-        "latestCut": 0.2,
-        "cuts": 5.0,
-        "dom": 3.2
-      },
-      "fetched": "2026-10-05"
-    },
-    {
-      "address": "The Preston Plan, Parks At Foster Crossing - Signature Series",
-      "city": "Anna",
-      "zip": "75409",
-      "price": 366728,
-      "beds": 4,
-      "baths": 3,
-      "sqft": 2059,
-      "propertyType": "single-family",
-      "status": "for sale",
-      "cutPercent": 5.1,
-      "dom": 49,
-      "domSource": "days on Zillow",
-      "url": "https://www.zillow.com/community/parks-at-foster-crossing-signature-series/456336170_zpid/",
-      "source": "Zillow",
-      "zpid": "456336170",
-      "reasons": [
-        "Latest cut is 5.1%, from $386,250 to $366,728 on Oct 4, 2026. +11.6 of 25.",
-        "The search list shows one price cut on Oct 4, 2026. It does not print earlier cuts, so only this cut is counted. +5.0 of 15.",
-        "49 days on Zillow. +4.1 of 10."
-      ],
-      "score": 20.7,
-      "points": {
-        "latestCut": 11.6,
-        "cuts": 5.0,
-        "dom": 4.1
       },
       "fetched": "2026-10-05"
     },

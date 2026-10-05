@@ -51,6 +51,13 @@ from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from listing_rules import (
+    address_street_number,
+    is_non_home,
+    prepare_board,
+    url_street_number,
+)
+
 ROOT = Path(__file__).resolve().parent
 FL_PATH = ROOT / "listings.json"
 TX_PATH = ROOT / "texas.json"
@@ -361,6 +368,9 @@ def patch_summary(summary: str, obs: dict, cut_changed: bool, dom_changed: bool)
 
 
 def excluded_reason(item: dict, info: dict) -> str | None:
+    url = str(item.get("detailUrl") or "")
+    if "/community/" in url.lower():
+        return "community floor plan"
     status = str(info.get("homeStatus") or item.get("statusType") or "").upper()
     text = str(item.get("statusText") or "").lower()
     if any(word in text for word in ("pending", "contingent", "auction", "foreclos", "sold")):
@@ -378,6 +388,19 @@ def excluded_reason(item: dict, info: dict) -> str | None:
     home_type = str(info.get("homeType") or "").upper()
     if home_type in LAND_TYPES or "LAND" in home_type:
         return "land"
+    try:
+        price = int(info.get("price") if info.get("price") is not None else item.get("unformattedPrice"))
+    except (TypeError, ValueError):
+        price = None
+    if is_non_home(
+        {
+            "price": price,
+            "address": str(info.get("streetAddress") or item.get("addressStreet") or ""),
+            "sqft": info.get("livingArea", item.get("area")),
+            "beds": info.get("bedrooms", item.get("beds")),
+        }
+    ):
+        return "not a home"
     if status and status not in {"FOR_SALE", "FORSALE"}:
         return status.lower().replace("_", " ")
     return None
@@ -416,7 +439,7 @@ def observation_from_item(item: dict) -> dict | None:
     city = str(info.get("city") or item.get("addressCity") or "").strip()
     state = str(info.get("state") or item.get("addressState") or "").strip().upper()
     zip_code = str(info.get("zipcode") or item.get("addressZipcode") or "").strip()
-    return {
+    seen = {
         "price": price,
         "change": change,
         "cut_dollars": abs(change),
@@ -438,6 +461,12 @@ def observation_from_item(item: dict) -> dict | None:
         "zip": zip_code,
         "exclude": excluded_reason(item, info),
     }
+    if not seen["exclude"]:
+        number = address_street_number(seen["street"])
+        linked = url_street_number(seen["url"])
+        if number and linked and number != linked:
+            seen["exclude"] = "link does not match address"
+    return seen
 
 
 def parse_search_html(html: str, url: str) -> dict:
@@ -868,6 +897,7 @@ def refresh_board(
                 listings.append(created)
                 seen_new.add(obs["zpid"])
                 by_zpid[obs["zpid"]] = created
+                by_addr[match_key(obs["street"], obs["city"], obs["zip"])] = created
                 stats["added"] += 1
                 if len(stats["examples"]) < 5:
                     stats["examples"].append(
@@ -1000,6 +1030,12 @@ def scrub_published(board: dict) -> bool:
             found = extract_fetched(str(narrative))
             if found:
                 row["fetched"] = found
+    kind = "tx" if board.get("state") == "TX" else "co" if board.get("state") == "CO" else "fl"
+    before_rows = json.dumps(board.get("listings"), sort_keys=True, default=str)
+    before_rules = board.get("rules")
+    prepare_board(board, kind)
+    if json.dumps(board.get("listings"), sort_keys=True, default=str) != before_rows or board.get("rules") != before_rules:
+        changed = True
     return changed
 
 
@@ -1142,7 +1178,10 @@ def empty_co_board() -> dict:
             "Relisted under the prior ask, 8, only when that price is printed and lower. Pending or "
             "contingent then back, 12, not also off-then-back unless a separate removal is shown. "
             "Under the newest printed assessment or the last printed sale price, 6 once. Motivated "
-            "remarks, 4. Half up to one decimal. Cap 100."
+            "remarks, 4. Half up to one decimal. Cap 100. Off the market, a relist under the prior "
+            "ask, or a pending or contingent sale scores only when that event is dated within the "
+            "12 months before this board's fetched date. Older history is ignored. A rent amount "
+            "in the price history is not a price cut."
         ),
         "listings": [],
     }
@@ -1348,6 +1387,70 @@ def self_test() -> int:
         return 1
     if seen.get("cut_date") is not None:
         print("self-test failed: list row with no datePriceChanged got a cut date", file=sys.stderr)
+        return 1
+    community = excluded_reason(
+        {"detailUrl": "/community/stonehaven/1_zpid/", "statusText": ""},
+        {"homeStatus": "FOR_SALE", "homeType": "SINGLE_FAMILY", "price": 400000},
+    )
+    if community != "community floor plan":
+        print(f"self-test failed: community row {community}", file=sys.stderr)
+        return 1
+    lot = excluded_reason(
+        {"detailUrl": "/homedetails/x/4_zpid/", "statusText": ""},
+        {
+            "homeStatus": "FOR_SALE",
+            "homeType": "MANUFACTURED",
+            "price": 4999,
+            "streetAddress": "7403 46th Ave N Lot 78",
+            "livingArea": 960,
+            "bedrooms": 2,
+        },
+    )
+    if lot != "not a home":
+        print(f"self-test failed: lot row {lot}", file=sys.stderr)
+        return 1
+    cheap_home = excluded_reason(
+        {"detailUrl": "/homedetails/x/5_zpid/", "statusText": ""},
+        {
+            "homeStatus": "FOR_SALE",
+            "homeType": "MANUFACTURED",
+            "price": 7500,
+            "streetAddress": "1280 Lakeview Rd 246",
+            "livingArea": 672,
+            "bedrooms": 2,
+        },
+    )
+    if cheap_home is not None:
+        print(f"self-test failed: manufactured home excluded ({cheap_home})", file=sys.stderr)
+        return 1
+    by_zpid = {created["zpid"]: created}
+    by_addr = {match_key(obs["street"], obs["city"], obs["zip"]): created}
+    if find_listing(dict(obs, zpid="999999"), by_zpid, by_addr) is not created:
+        print("self-test failed: same address with a new zpid was not treated as a duplicate", file=sys.stderr)
+        return 1
+    mismatched = observation_from_item(
+        {
+            "zpid": "9",
+            "detailUrl": "/homedetails/1408-Willow-Way-Windsor-CO-80550/9_zpid/",
+            "hdpData": {
+                "homeInfo": {
+                    "price": 599900,
+                    "priceChange": -15000,
+                    "homeType": "SINGLE_FAMILY",
+                    "homeStatus": "FOR_SALE",
+                    "streetAddress": "201 Poudre Bay",
+                    "city": "Windsor",
+                    "state": "CO",
+                    "zipcode": "80550",
+                }
+            },
+        }
+    )
+    if not mismatched or mismatched["exclude"] != "link does not match address":
+        print(f"self-test failed: mismatched link {mismatched}", file=sys.stderr)
+        return 1
+    if created.get("deepened"):
+        print("self-test failed: new listing published deepened", file=sys.stderr)
         return 1
     print("self-test ok")
     return 0
