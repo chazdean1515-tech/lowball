@@ -23,6 +23,15 @@
 #
 # Colorado starts from CO_SEED_CITIES when colorado.json has no cities yet.
 #
+# Colorado deepen (listing pages, same rules as FL/TX deep scores):
+#   python3 deepen_colorado.py --limit 120
+# Or after a CO list refresh:
+#   python3 refresh.py --state CO --deepen-co 80
+# deepen_colorado.py visits Redfin listing pages via Playwright (urllib hits WAF),
+# scores multi-cuts / off-market / fall-through / assessment / remarks, and writes
+# colorado.json. Priority: Denver, Aurora, Colorado Springs, Fort Collins, Boulder
+# and current top shallow scores. Cap with --limit / --deepen-co.
+#
 # Smoke test, one city, no writes:
 #   python3 refresh.py --city Eustis --state FL --max-pages 1 --dry-run
 
@@ -1098,6 +1107,35 @@ def load_board_or_empty(path: Path, kind: str) -> tuple[dict, str]:
     return board, before
 
 
+
+def deepen_colorado_board(limit: int, delay: float = 1.0) -> int:
+    """Deepen CO rows from Redfin listing pages (same rules as FL/TX).
+
+    Runs deepen_colorado.py as a subprocess. Prefers the Playwright venv when
+    present because Redfin listing HTML needs a real browser for the WAF.
+    """
+    if limit <= 0:
+        return 0
+    import subprocess
+
+    script = ROOT / "deepen_colorado.py"
+    if not script.exists():
+        print(f"{script.name} is missing; skipped CO deepen.", file=sys.stderr)
+        return 1
+    candidates = [
+        Path("/workspace/.venv-pw/bin/python"),
+        ROOT / ".venv-pw" / "bin" / "python",
+        Path(sys.executable),
+    ]
+    exe = next((str(p) for p in candidates if p.exists()), sys.executable)
+    print(f"Deepening Colorado via {exe} {script.name} (limit {limit})...")
+    proc = subprocess.run(
+        [exe, str(script), "--limit", str(limit), "--delay", str(delay)],
+        cwd=str(ROOT),
+    )
+    return int(proc.returncode)
+
+
 def run(args) -> int:
     fl_board, fl_before = load_board(FL_PATH)
     tx_board, tx_before = load_board(TX_PATH)
@@ -1124,6 +1162,21 @@ def run(args) -> int:
     for kind in boards:
         if changed[kind]:
             counts_changed(kind, boards[kind])
+    deepen_limit = getattr(args, "deepen_co", 0) or 0
+    if deepen_limit and state_filter in (None, "CO") and not args.dry_run:
+        # Reload board from disk only after list writes; deepen updates colorado.json itself.
+        if changed["co"]:
+            CO_PATH.write_text(json.dumps(boards["co"], indent=2, ensure_ascii=False) + "\n")
+            befores["co"] = CO_PATH.read_text()
+            changed["co"] = True
+        code = deepen_colorado_board(deepen_limit, delay=args.delay)
+        if code == 0 and CO_PATH.exists():
+            boards["co"], befores["co"] = load_board(CO_PATH)
+            changed["co"] = True
+            counts_changed("co", boards["co"])
+            stats["co"]["deepened"] = deepen_limit
+        elif code not in (0, 2):
+            print(f"Colorado deepen exited {code}; list refresh results are kept.", file=sys.stderr)
     return _finish(args, boards, befores, changed, stats, since, since_src, budget, state)
 
 
@@ -1256,6 +1309,14 @@ def main(argv: list[str] | None = None) -> int:
         help="Add only cuts dated on or after this YYYY-MM-DD instead of refresh_state.json. Does not move the cutoff.",
     )
     parser.add_argument("--delay", type=float, default=1.0, help="Seconds between list requests.")
+    parser.add_argument(
+        "--deepen-co",
+        type=int,
+        default=0,
+        metavar="N",
+        help="After the CO list refresh, deepen up to N Colorado homes from Redfin listing pages "
+        "(same multi-cut / off-market / remarks rules as FL/TX). 0 skips (default).",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Do not write JSON files.")
     parser.add_argument("--self-test", action="store_true", help="Run local checks and do not touch the boards.")
     args = parser.parse_args(argv)
