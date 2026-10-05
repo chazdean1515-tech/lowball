@@ -422,10 +422,9 @@ def score_listing(listing: dict, page: dict) -> dict:
         listing["mls"] = page["mls"]
     if page.get("status"):
         listing["status"] = page["status"]
-    listing["verifiedFrom"] = (
-        f"Redfin listing page deepened {today_iso()}. Sale history, DOM, assessment, "
-        "and remarks scored when the page printed them."
-    )
+    listing.pop("verifiedFrom", None)
+    listing.pop("verified_from", None)
+    listing["fetched"] = today_iso()
     listing["deepened"] = True
     return listing
 
@@ -601,6 +600,44 @@ def deepen_with_playwright(targets: list[dict], delay: float, dry_run: bool) -> 
     return stats
 
 
+def extract_fetched(text: str) -> str | None:
+    match = re.search(r"\d{4}-\d{2}-\d{2}", text)
+    if match:
+        return match.group(0)
+    match = re.search(
+        r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),\s+(\d{4})",
+        text,
+        re.I,
+    )
+    if not match:
+        return None
+    try:
+        parsed = datetime.strptime(
+            f"{match.group(1)[:3]} {int(match.group(2))} {match.group(3)}",
+            "%b %d %Y",
+        )
+    except ValueError:
+        return None
+    return parsed.date().isoformat()
+
+
+def scrub_published(board: dict) -> None:
+    """Drop scrape notes so a deepen run cannot write them back into colorado.json."""
+    for key in ("note", "blocked", "leftOff"):
+        board.pop(key, None)
+    for row in board.get("listings") or []:
+        if not isinstance(row, dict):
+            continue
+        narrative = None
+        for old in ("verified_from", "verifiedFrom"):
+            if old in row:
+                narrative = row.pop(old)
+        if narrative and not row.get("fetched"):
+            found = extract_fetched(str(narrative))
+            if found:
+                row["fetched"] = found
+
+
 def apply_updates(board: dict, updates: dict[str, dict]) -> int:
     n = 0
     for i, home in enumerate(board["listings"]):
@@ -613,23 +650,7 @@ def apply_updates(board: dict, updates: dict[str, dict]) -> int:
     )
     board["fetched"] = today_iso()
     board["count"] = len(board["listings"])
-    deepened = sum(1 for h in board["listings"] if h.get("deepened") or h.get("source") == "Redfin")
-    board["note"] = (
-        f"Colorado board: Zillow price-reduced city lists plus Redfin listing-page "
-        f"deepening for {deepened} homes (priority metros Denver/Aurora/Colorado Springs/"
-        f"Fort Collins/Boulder and top shallow scores). Same scoring rules as Florida and "
-        f"Texas. Undeepened rows still score only the latest list cut, one cut, and days "
-        f"on Zillow. Deepened {today_iso()}."
-    )
-    blocked = board.get("blocked") or []
-    msg = (
-        "Redfin individual listing HTML via plain urllib often returns HTTP 202 AWS WAF; "
-        "deepen_colorado.py uses Playwright. Autocomplete is occasionally 403; UI search is the fallback."
-    )
-    if msg not in blocked:
-        blocked = [b for b in blocked if "Individual listing pages were not opened" not in b]
-        blocked.insert(0, msg)
-    board["blocked"] = blocked
+    scrub_published(board)
     return n
 
 

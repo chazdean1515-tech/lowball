@@ -1,0 +1,101 @@
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("fonts/source-serif-4-latin.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("fonts/source-sans-3-latin.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --ink: #1a1a1a;
+  --char: #3c3c3c;
+  --muted: #5e5e5e;
+  --line: #e3e3e0;
+  --bg: #efefec;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Source Sans 3", "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+a { color: var(--ink); }
+a:hover { color: #000; }
+.top {
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.top-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-weight: 650;
+  font-size: 26px;
+  letter-spacing: -0.03em;
+  color: var(--char);
+  text-decoration: none;
+}
+.logo img { display: block; }
+.top nav { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.top nav a { font-weight: 700; font-size: 14px; text-decoration: none; }
+.top nav a:hover { text-decoration: underline; }
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+h1 {
+  margin: 0 0 12px;
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  letter-spacing: -0.03em;
+  font-weight: 650;
+  line-height: 1.15;
+}
+h2 {
+  margin: 28px 0 8px;
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 22px;
+  font-weight: 650;
+}
+p { margin: 0 0 12px; }
+.callout {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+.site-footer {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 32px;
+}
+.site-footer p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .top-inner { align-items: flex-start; flex-direction: column; }
+  h1 { font-size: 28px; }
+}

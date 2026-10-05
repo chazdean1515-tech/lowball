@@ -3,17 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lowball</title>
-<meta name="description" content="Find the most desperate sellers. Lowball ranks homes by price cuts, failed deals, and cheaper relists.">
-<meta property="og:title" content="Lowball">
-<meta property="og:description" content="Find the most desperate sellers. Florida, Texas, and Colorado are live.">
+<title>Lowball — Motivated home sellers in Florida, Texas, and Colorado</title>
+<meta name="description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed, and not affiliated with Redfin, Zillow, or any MLS.">
+<link rel="canonical" href="https://uselowball.com/">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="Lowball">
+<meta property="og:title" content="Lowball — Motivated home sellers">
+<meta property="og:description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed.">
 <meta property="og:image" content="https://uselowball.com/og.jpg">
+<meta property="og:image:alt" content="Lowball wordmark. Motivated home sellers, ranked by price cuts, relists, and failed contracts.">
 <meta property="og:url" content="https://uselowball.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Lowball">
-<meta name="twitter:description" content="Find the most desperate sellers. Florida, Texas, and Colorado are live.">
+<meta name="twitter:title" content="Lowball — Motivated home sellers">
+<meta name="twitter:description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed.">
 <meta name="twitter:image" content="https://uselowball.com/og.jpg">
+<meta name="twitter:image:alt" content="Lowball wordmark. Motivated home sellers, ranked by price cuts, relists, and failed contracts.">
 <style>
   @font-face {
     font-family: "Source Serif 4";
@@ -37,6 +46,7 @@
     --line: #e3e3e0;
     --bg: #efefec;
     --card: #fff;
+    --header-offset: 80px;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -50,15 +60,16 @@
   }
   a { color: var(--ink); text-decoration: none; }
   a:hover { color: #000; }
-  .brand {
-    background: #000;
-    line-height: 0;
-  }
-  .brand img {
-    display: block;
-    width: min(100%, 960px);
-    height: auto;
-    margin: 0 auto;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
   .top {
     position: sticky;
@@ -70,20 +81,25 @@
   .top-inner {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 12px 20px;
+    padding: 10px 20px;
     display: grid;
     grid-template-columns: auto minmax(180px, 1fr) auto;
-    gap: 20px;
+    gap: 16px;
     align-items: center;
   }
   .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
     font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
     font-weight: 650;
-    font-size: 28px;
+    font-size: 26px;
     letter-spacing: -0.03em;
     color: var(--char);
-    margin: 0;
+    line-height: 1;
   }
+  .mark { display: block; flex: none; }
   .logo span {
     font-family: "Source Sans 3", "Avenir Next", "Trebuchet MS", sans-serif;
     font-weight: 600;
@@ -99,7 +115,7 @@
     background: #fff;
     border: 1px solid #c8c8c4;
     border-radius: 4px;
-    height: 44px;
+    height: 40px;
     padding: 0 12px;
     gap: 8px;
   }
@@ -113,12 +129,19 @@
     color: var(--ink);
     background: transparent;
   }
-  nav { display: flex; gap: 8px; align-items: center; }
+  .nav-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  nav { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
   nav a, .state-btn {
     color: var(--ink);
     font-weight: 600;
     font-size: 15px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 4px;
     border: 0;
     background: transparent;
@@ -133,37 +156,36 @@
   .coming-soon {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     width: fit-content;
-    margin: 0 auto 12px;
-    padding: 6px 18px;
+    margin: 0;
+    padding: 4px 12px;
     background: #000;
     color: #a6ff00;
     border: 1px solid #a6ff00;
     border-radius: 999px;
-    font-size: 20px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     line-height: 1.2;
-    text-shadow: 0 0 6px rgba(166,255,0,.55);
-    box-shadow: 0 0 0 1px rgba(166,255,0,.15), 0 0 14px rgba(166,255,0,.35);
-    animation: coming-soon-glow 2.4s ease-in-out infinite;
+    box-shadow: 0 0 0 1px rgba(166,255,0,.2);
+    animation: coming-soon-glow 5s ease-in-out infinite;
   }
   .coming-soon::before {
     content: "";
-    width: 9px;
-    height: 9px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #a6ff00;
-    box-shadow: 0 0 8px #a6ff00;
     flex: none;
   }
   @keyframes coming-soon-glow {
-    0%, 100% { box-shadow: 0 0 0 1px rgba(166,255,0,.15), 0 0 10px rgba(166,255,0,.25); }
-    50% { box-shadow: 0 0 0 1px rgba(166,255,0,.3), 0 0 22px rgba(166,255,0,.55); }
+    0%, 100% { box-shadow: 0 0 0 1px rgba(166,255,0,.25); }
+    50% { box-shadow: 0 0 0 1px rgba(166,255,0,.55), 0 0 8px rgba(166,255,0,.22); }
   }
   @media (prefers-reduced-motion: reduce) {
     .coming-soon { animation: none; }
+    html { scroll-behavior: auto; }
   }
   .page {
     max-width: 1180px;
@@ -177,7 +199,7 @@
     gap: 16px;
     margin-bottom: 8px;
   }
-  .results-head h2 {
+  .results-head h1 {
     margin: 0;
     font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
     font-size: 28px;
@@ -202,11 +224,12 @@
     padding: 0 12px;
   }
   .sort select:focus { outline: 2px solid var(--char); border-color: var(--char); }
-  .disclaimer {
-    margin: 0 0 16px;
+  .showing, .disclaimer {
+    margin: 0 0 12px;
     color: var(--muted);
     font-size: 14px;
   }
+  .disclaimer { margin-bottom: 16px; }
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -226,6 +249,7 @@
   .rank {
     width: 36px;
     height: 36px;
+    margin: 0;
     border-radius: 2px;
     background: var(--char);
     color: #fff;
@@ -240,13 +264,14 @@
     background: #e8e8e5;
     min-height: 112px;
     border-radius: 2px;
-    color: #6d6d6d;
-    font-size: 12px;
+    color: #3c3c3c;
+    font-size: 13px;
     line-height: 1.3;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    padding: 8px;
   }
   .row {
     display: flex;
@@ -269,6 +294,9 @@
   .addr a:hover { text-decoration-color: var(--ink); color: #000; }
   .pill {
     flex: 0 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
     background: #f4f4f1;
     color: var(--char);
     font-weight: 700;
@@ -278,6 +306,14 @@
     font-size: 14px;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .pill-k {
+    font-weight: 650;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #3c3c3c;
   }
   .price {
     font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
@@ -287,14 +323,17 @@
     margin-top: 4px;
     font-variant-numeric: tabular-nums;
   }
+  .fetched {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
   .why-line {
     margin: 6px 0 0;
     font-size: 14px;
     color: #2e2e2e;
   }
-  .why {
-    margin-top: 8px;
-  }
+  .why { margin-top: 8px; }
   .why summary {
     cursor: pointer;
     font-weight: 650;
@@ -324,10 +363,7 @@
     margin-top: 10px;
     font-size: 13px;
   }
-  .status {
-    font-weight: 700;
-    color: #1f5c38;
-  }
+  .status { font-weight: 700; color: #1f5c38; }
   .st-pend { color: #7a5a12; }
   .st-unk { color: #5e5e5e; }
   .src { color: var(--muted); }
@@ -339,13 +375,35 @@
     text-underline-offset: 2px;
   }
   .view:hover { text-decoration-color: var(--ink); }
+  .more {
+    display: block;
+    width: 100%;
+    margin: 4px 0 8px;
+    height: 44px;
+    border: 1px solid #c8c8c4;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .more:hover { background: #f4f4f1; }
+  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible {
+    outline: 2px solid var(--char);
+    outline-offset: 2px;
+  }
+  .more[hidden] { display: none; }
   .rail {
     position: sticky;
-    top: 84px;
+    top: calc(var(--header-offset) + 8px);
+    max-height: calc(100vh - var(--header-offset) - 16px);
+    overflow: auto;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 2px;
     padding: 16px;
+    scroll-margin-top: var(--header-offset);
   }
   .rail h2 {
     margin: 0 0 4px;
@@ -392,10 +450,12 @@
     margin-top: 18px;
     padding-top: 12px;
     border-top: 1px solid var(--line);
+    scroll-margin-top: var(--header-offset);
   }
-  .rules h3 { margin: 0 0 6px; color: var(--ink); font-size: 14px; }
+  .rules h2 { margin: 0 0 6px; font-size: 18px; }
   .rules p, .rules li { color: var(--muted); font-size: 13px; }
-  .rules ol { margin: 0; padding-left: 18px; }
+  .rules .source-note { color: var(--ink); }
+  .rules ol { margin: 8px 0 0; padding-left: 18px; }
   .rules li { margin: 0 0 4px; }
   .empty {
     display: none;
@@ -408,18 +468,40 @@
   .site-footer {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 0 20px 28px;
+    padding: 8px 20px 28px;
+  }
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 8px;
+  }
+  .footer-nav a {
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: underline;
+    text-decoration-color: #bdbdb8;
+    text-underline-offset: 2px;
   }
   .site-footer p {
-    margin: 0;
+    margin: 0 0 6px;
     color: var(--muted);
     font-size: 12px;
     font-weight: 400;
   }
   @media (max-width: 860px) {
-    .top-inner { grid-template-columns: 1fr; gap: 10px; }
+    :root { --header-offset: 144px; }
+    .top-inner {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      padding: 8px 12px;
+    }
+    .logo { font-size: 22px; }
+    .search { height: 36px; }
+    .nav-row { grid-column: 1 / -1; justify-content: flex-start; }
+    nav a, .state-btn { padding: 5px 8px; font-size: 14px; }
     .layout { grid-template-columns: 1fr; }
-    .rail { position: static; }
+    .rail { position: static; max-height: none; overflow: visible; }
     .card {
       grid-template-columns: 32px minmax(0, 1fr);
       gap: 10px;
@@ -431,49 +513,53 @@
     .results-head { flex-direction: column; align-items: flex-start; }
     .price { font-size: 22px; }
     .addr { font-size: 15px; }
+    .page { padding: 14px 12px 36px; }
   }
 </style>
 </head>
 <body>
-<div class="brand">
-  <img src="og.jpg" alt="Lowball. Find the most desperate sellers.">
-</div>
 <header class="top">
   <div class="top-inner">
-    <p class="logo">Lowball <span id="logo-state">Florida</span></p>
-    <form class="search" role="search" action="#" onsubmit="return false;">
+    <p class="logo"><img class="mark" src="favicon.svg" width="28" height="28" alt="" aria-hidden="true">Lowball <span id="logo-state">Florida</span></p>
+    <form class="search" role="search">
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#5e5e5e" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <label for="q" style="position:absolute;left:-9999px">Search listings</label>
-      <input id="q" type="search" placeholder="City, ZIP, or address" aria-label="Search listings">
+      <label class="sr-only" for="q">Search listings</label>
+      <input id="q" type="search" placeholder="City, ZIP, or address" autocomplete="off">
     </form>
-    <nav>
-      <button type="button" class="state-btn is-on" id="show-fl" aria-pressed="true">Florida</button>
-      <button type="button" class="state-btn" id="show-tx" aria-pressed="false">Texas</button>
-      <button type="button" class="state-btn" id="show-co" aria-pressed="false">Colorado</button>
-      <a href="#score">Score</a>
-    </nav>
+    <div class="nav-row">
+      <nav aria-label="Boards">
+        <button type="button" class="state-btn is-on" id="show-fl" aria-pressed="true">Florida</button>
+        <button type="button" class="state-btn" id="show-tx" aria-pressed="false">Texas</button>
+        <button type="button" class="state-btn" id="show-co" aria-pressed="false">Colorado</button>
+        <a href="#map">Map</a>
+        <a href="#score">Score</a>
+      </nav>
+      <p class="coming-soon">App coming soon!</p>
+    </div>
   </div>
-  <p class="coming-soon">App coming soon!</p>
 </header>
 <main class="page">
   <div class="results-head">
-    <h2><span id="place">Florida</span> homes <span class="count" id="count"></span></h2>
+    <h1>Motivated sellers in <span id="place">Florida</span> <span class="count" id="count"></span></h1>
     <label class="sort">Sort
-      <select id="sort" aria-label="Sort listings">
+      <select id="sort">
         <option value="score" selected>Lowball score</option>
         <option value="cut">Price cut</option>
         <option value="dom">Days on market</option>
       </select>
     </label>
   </div>
-  <p class="disclaimer" id="disclaimer">Numbers are from public listings, not a live feed.</p>
+  <p class="showing" id="showing" aria-live="polite"></p>
+  <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
   <div class="layout">
-    <section id="list" aria-label="Listings">
-      <p class="empty" id="empty">No listings match that search.</p>
-    </section>
-    <aside class="rail" aria-label="Map stand-in">
-      <h2>Map</h2>
-      <p class="standin">Stand-in outline and city list. Not a live map, and not a photo.</p>
+    <div class="board">
+      <section id="list" aria-label="Listings"></section>
+      <p class="empty" id="empty">Loading Florida listings.</p>
+      <button type="button" class="more" id="more" hidden>Show more listings</button>
+    </div>
+    <aside class="rail" id="map" aria-labelledby="map-heading">
+      <h2 id="map-heading">Map</h2>
+      <p class="standin" id="map-caption">Cities on this board. The shape is a simple outline of the state, not a live map.</p>
       <div class="mapbox" id="map-fl">
         <svg viewBox="0 0 220 280" role="img" aria-label="Simple outline of Florida">
           <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M14 86 L52 74 L86 78 L104 96 L116 122 L128 156 L136 188 L130 214 L146 236 L158 258 L146 266 L126 246 L116 222 L108 196 L100 168 L90 140 L76 114 L58 98 L30 96 Z"/>
@@ -506,77 +592,86 @@
       </div>
       <ul class="cities" id="cities"></ul>
       <div class="rules" id="score">
-        <h3>How the score works</h3>
-        <div id="rules-fl">
-          <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100.</p>
-          <ol>
-            <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0.</li>
-            <li>Number of cuts on this listing: 5 each, up to 15.</li>
-            <li>Days on market: days divided by 12, up to 10. About 120 days or more is 10. Uses the printed days-on-market figure, otherwise days on Redfin or Zillow.</li>
-            <li>Drop from the first ask on this listing: 1 point per percent, up to 10.</li>
-            <li>Off market, then back, or expired and relisted: 12.</li>
-            <li>Relisted under the prior ask: 8 more.</li>
-            <li>Pending or contingent, then back on the market: 12. More than once is noted, not extra points.</li>
-            <li>Under the tax assessment or under the last sale: 6.</li>
-            <li>Vacant, moved, tenant, estate, divorce, relocation, or seller-financing language: 4.</li>
-            <li>Remarks say motivated, bring offers, price improved, or similar: 4.</li>
-            <li>Agent replaced, or a refresh with no real change: 4.</li>
-            <li>Nearby homes went under contract, or a cut right after a dead open house: 4.</li>
-          </ol>
-        </div>
-        <p id="rules-tx" hidden></p>
-        <p id="rules-co" hidden></p>
+        <h2>How the score works</h2>
+        <p class="source-note" id="source-fl">Florida rows were read from public Zillow pages, plus some earlier Redfin pages.</p>
+        <p class="source-note" id="source-tx" hidden>Texas rows were read from public Zillow pages. A few earlier Texas listings were read from Redfin.</p>
+        <p class="source-note" id="source-co" hidden>Colorado rows were read from public Zillow price-reduced lists. Some were checked again on the Redfin listing page.</p>
+        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100.</p>
+        <ol>
+          <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0.</li>
+          <li>Number of cuts on this listing: 5 each, up to 15.</li>
+          <li>Days on market: days divided by 12, up to 10. About 120 days or more is 10.
+            <span id="dom-fl">Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow or days on Redfin, whichever that page printed.</span>
+            <span id="dom-tx" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow, because these rows were read from Zillow. The earlier Redfin listings use days on Redfin.</span>
+            <span id="dom-co" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow. Listings checked on a Redfin page use the day count printed there.</span>
+          </li>
+          <li>Drop from the first ask on this listing: 1 point per percent, up to 10.</li>
+          <li>Off market, then back, or expired and relisted: 12.</li>
+          <li>Relisted under the prior ask: 8 more.</li>
+          <li>Pending or contingent, then back on the market: 12. More than once is mentioned, not extra points.</li>
+          <li>Under the tax assessment or under the last sale: 6.</li>
+          <li>Vacant, moved, tenant, estate, divorce, relocation, or seller-financing language: 4.</li>
+          <li>Remarks say motivated, bring offers, price improved, or similar: 4.</li>
+          <li>Agent replaced, or a refresh with no real change: 4.</li>
+          <li>Nearby homes went under contract, or a cut right after a dead open house: 4.</li>
+        </ol>
       </div>
     </aside>
   </div>
 </main>
 <footer class="site-footer">
+  <nav class="footer-nav" aria-label="About Lowball">
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+  </nav>
+  <p>Lowball is not affiliated with Redfin, Zillow, or any MLS. The boards are not a live feed.</p>
   <p>Lowball™ and uselowball.com are trademarks of Charlie O'Brien.</p>
 </footer>
 <script>
 (function () {
   var list = document.getElementById("list");
   var empty = document.getElementById("empty");
+  var moreBtn = document.getElementById("more");
   var countEl = document.getElementById("count");
+  var showingEl = document.getElementById("showing");
   var q = document.getElementById("q");
   var sort = document.getElementById("sort");
   var place = document.getElementById("place");
   var logoState = document.getElementById("logo-state");
   var citiesEl = document.getElementById("cities");
+  var mapCaption = document.getElementById("map-caption");
   var mapFl = document.getElementById("map-fl");
   var mapTx = document.getElementById("map-tx");
   var mapCo = document.getElementById("map-co");
-  var rulesFl = document.getElementById("rules-fl");
-  var rulesTx = document.getElementById("rules-tx");
-  var rulesCo = document.getElementById("rules-co");
   var btnFl = document.getElementById("show-fl");
   var btnTx = document.getElementById("show-tx");
   var btnCo = document.getElementById("show-co");
   var disclaimer = document.getElementById("disclaimer");
+  var PAGE = 40;
+  var shown = PAGE;
   var boards = { fl: null, tx: null, co: null };
+  var errors = { fl: "", tx: "", co: "" };
+  var loading = { fl: false, tx: false, co: false };
+  var inflight = {};
   var state = "fl";
   var stateLabel = { fl: "Florida", tx: "Texas", co: "Colorado" };
   var stateAbbr = { fl: "FL", tx: "TX", co: "CO" };
   var stateSlug = { fl: "florida", tx: "texas", co: "colorado" };
+  var urls = { fl: "listings.json", tx: "texas.json", co: "colorado.json" };
+  var disclaimerBase = "Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.";
 
   function formatFetched(iso) {
-    if (!iso) return null;
+    if (!iso) return "";
     var parts = String(iso).split("-");
-    if (parts.length !== 3) return iso;
+    if (parts.length !== 3) return String(iso);
     var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     var m = parseInt(parts[1], 10) - 1;
     var d = parseInt(parts[2], 10);
     var y = parts[0];
-    if (m < 0 || m > 11 || !d || !y) return iso;
+    if (m < 0 || m > 11 || !d || !y) return String(iso);
     return months[m] + " " + d + ", " + y;
-  }
-
-  function updateDisclaimer(board) {
-    if (!disclaimer) return;
-    var label = formatFetched(board && board.fetched);
-    disclaimer.textContent = label
-      ? ("Numbers are from public listings fetched " + label + ", not a live feed.")
-      : "Numbers are from public listings, not a live feed.";
   }
 
   function el(tag, cls, text) {
@@ -605,6 +700,10 @@
     if (!status) return "";
     if (status === String(status).toLowerCase()) return status.charAt(0).toUpperCase() + status.slice(1);
     return status;
+  }
+
+  function safeUrl(url) {
+    return /^https?:\/\//i.test(String(url || "")) ? String(url) : "";
   }
 
   function fullAddress(kind, item) {
@@ -686,43 +785,40 @@
     return bestI;
   }
 
-  function makeCard(kind, item) {
+  function makeCard(kind, item, rankNum, board) {
     var addr = fullAddress(kind, item);
     var card = el("article", "card");
-    card.setAttribute("data-score", String(item.score));
-    card.setAttribute("data-cut", String(cutValue(kind, item)));
-    card.setAttribute("data-dom", String(domValue(item)));
-    card.setAttribute("data-city", item.city || "");
-    card.setAttribute("data-address", addr);
-
-    var rank = el("div", "rank", "");
-    rank.setAttribute("aria-label", "Rank");
+    var rank = el("p", "rank");
+    rank.appendChild(el("span", "sr-only", "Rank "));
+    rank.appendChild(el("span", "rank-n", String(rankNum)));
     card.appendChild(rank);
 
-    var ph = el("div", "ph");
-    ph.setAttribute("aria-hidden", "true");
-    ph.appendChild(el("span", null, "No photo"));
-    ph.appendChild(document.createElement("br"));
-    ph.appendChild(document.createTextNode("in the fetch"));
+    var ph = el("div", "ph", "No photo available");
     card.appendChild(ph);
 
     var body = el("div", "body");
     var row = el("div", "row");
-    var h3 = el("h3", "addr");
-    if (item.url) {
+    var addrEl = el("p", "addr");
+    var href = safeUrl(item.url);
+    if (href) {
       var link = el("a", null, addr);
-      link.href = item.url;
-      h3.appendChild(link);
+      link.href = href;
+      addrEl.appendChild(link);
     } else {
-      h3.textContent = addr;
+      addrEl.textContent = addr;
     }
-    row.appendChild(h3);
-    var pill = el("div", "pill", scoreText(item.score));
-    pill.title = "Lowball score, capped at 100";
+    row.appendChild(addrEl);
+    var pill = el("p", "pill");
+    pill.appendChild(el("span", "pill-k", "Score"));
+    pill.appendChild(el("span", "pill-n", scoreText(item.score)));
+    pill.appendChild(el("span", "sr-only", " out of 100"));
     row.appendChild(pill);
     body.appendChild(row);
 
     if (item.price != null && item.price !== "") body.appendChild(el("div", "price", money(item.price)));
+    var fetchedIso = item.fetched || (board && board.fetched);
+    var fetchedLabel = formatFetched(fetchedIso);
+    if (fetchedLabel) body.appendChild(el("p", "fetched", "As of " + fetchedLabel));
 
     var reasons = Array.isArray(item.reasons) ? item.reasons : [];
     var bestI = reasons.length ? strongestIndex(reasons) : -1;
@@ -746,59 +842,41 @@
     if (item.status) meta.appendChild(el("span", statusClass(item.status), statusLabel(item.status)));
     var src = sourceLine(kind, item);
     if (src) meta.appendChild(el("span", "src", src));
-    if (item.url) {
+    if (href) {
       var view = el("a", "view", "View listing");
-      view.href = item.url;
+      view.href = href;
       meta.appendChild(view);
     }
     if (meta.childNodes.length) details.appendChild(meta);
     body.appendChild(details);
-
     card.appendChild(body);
     return card;
   }
 
-  function num(node, name) {
-    return parseFloat(node.getAttribute(name)) || 0;
-  }
-
-  function cards() {
-    return Array.prototype.slice.call(list.querySelectorAll(".card"));
-  }
-
-  function apply() {
-    var board = boards[state];
-    var stateName = stateSlug[state];
-    var query = q.value.trim().toLowerCase();
-    var showAll = query === "" || query === stateName;
-    var all = cards();
-    var visible = [];
-    all.forEach(function (card) {
-      var hay = (card.getAttribute("data-address") + " " + card.getAttribute("data-city")).toLowerCase();
-      var ok = showAll || hay.indexOf(query) !== -1;
-      card.style.display = ok ? "" : "none";
-      if (ok) visible.push(card);
+  function paintChrome() {
+    var kind = state;
+    var label = stateLabel[kind];
+    place.textContent = label;
+    logoState.textContent = label;
+    mapCaption.textContent = label + " cities on this board. The shape is a simple outline of the state, not a live map.";
+    mapFl.hidden = kind !== "fl";
+    mapTx.hidden = kind !== "tx";
+    mapCo.hidden = kind !== "co";
+    ["fl", "tx", "co"].forEach(function (key) {
+      var source = document.getElementById("source-" + key);
+      var dom = document.getElementById("dom-" + key);
+      if (source) source.hidden = key !== kind;
+      if (dom) dom.hidden = key !== kind;
     });
-    var key = sort.value;
-    visible.sort(function (a, b) {
-      if (key === "cut") return num(b, "data-cut") - num(a, "data-cut") || num(b, "data-score") - num(a, "data-score");
-      if (key === "dom") return num(b, "data-dom") - num(a, "data-dom") || num(b, "data-score") - num(a, "data-score");
-      return num(b, "data-score") - num(a, "data-score") || num(b, "data-cut") - num(a, "data-cut");
-    });
-    var hidden = all.filter(function (card) { return card.style.display === "none"; });
-    visible.forEach(function (card, i) {
-      card.querySelector(".rank").textContent = String(i + 1);
-      list.insertBefore(card, empty);
-    });
-    hidden.forEach(function (card) { list.insertBefore(card, empty); });
-    countEl.textContent = String(visible.length);
-    if (!board) {
-      empty.textContent = "Loading listings.";
-      empty.style.display = "block";
-      return;
-    }
-    empty.textContent = visible.length ? "" : "No listings match that search.";
-    empty.style.display = visible.length ? "none" : "block";
+    btnFl.classList.toggle("is-on", kind === "fl");
+    btnTx.classList.toggle("is-on", kind === "tx");
+    btnCo.classList.toggle("is-on", kind === "co");
+    btnFl.setAttribute("aria-pressed", kind === "fl" ? "true" : "false");
+    btnTx.setAttribute("aria-pressed", kind === "tx" ? "true" : "false");
+    btnCo.setAttribute("aria-pressed", kind === "co" ? "true" : "false");
+    var board = boards[kind];
+    var asOf = formatFetched(board && board.fetched);
+    disclaimer.textContent = asOf ? ("As of " + asOf + ". " + disclaimerBase) : disclaimerBase;
   }
 
   function fillCities(items) {
@@ -817,35 +895,92 @@
     });
   }
 
-  function render() {
-    var board = boards[state];
+  function matchingItems(board) {
+    var query = q.value.trim().toLowerCase();
+    var stateName = stateSlug[state];
+    var showAll = query === "" || query === stateName;
+    var items = (board.listings || []).filter(function (item) {
+      if (showAll) return true;
+      var hay = (fullAddress(state, item) + " " + (item.city || "")).toLowerCase();
+      return hay.indexOf(query) !== -1;
+    });
+    var key = sort.value;
     var kind = state;
-    cards().forEach(function (card) { card.remove(); });
-    if (!board) return;
-    updateDisclaimer(board);
-    var items = board.listings.slice().sort(function (a, b) {
-      return Number(b.score) - Number(a.score);
+    items.sort(function (a, b) {
+      if (key === "cut") return cutValue(kind, b) - cutValue(kind, a) || Number(b.score) - Number(a.score);
+      if (key === "dom") return domValue(b) - domValue(a) || Number(b.score) - Number(a.score);
+      return Number(b.score) - Number(a.score) || cutValue(kind, b) - cutValue(kind, a);
     });
-    items.forEach(function (item) {
-      list.insertBefore(makeCard(kind, item), empty);
+    return items;
+  }
+
+  function apply() {
+    var board = boards[state];
+    list.textContent = "";
+    if (!board || !Array.isArray(board.listings)) return;
+    var items = matchingItems(board);
+    countEl.textContent = String(items.length);
+    if (!items.length) {
+      empty.textContent = q.value.trim() ? "No listings match that search." : "No listings on this board yet.";
+      empty.style.display = "block";
+      moreBtn.hidden = true;
+      showingEl.textContent = "Showing 0 of 0";
+      return;
+    }
+    var end = Math.min(shown, items.length);
+    var slice = items.slice(0, end);
+    var frag = document.createDocumentFragment();
+    slice.forEach(function (item, i) {
+      frag.appendChild(makeCard(state, item, i + 1, board));
     });
-    fillCities(board.listings);
-    var label = stateLabel[kind];
-    place.textContent = label;
-    logoState.textContent = label;
-    mapFl.hidden = kind !== "fl";
-    mapTx.hidden = kind !== "tx";
-    mapCo.hidden = kind !== "co";
-    rulesFl.hidden = kind !== "fl";
-    rulesTx.hidden = kind !== "tx";
-    rulesCo.hidden = kind !== "co";
-    btnFl.classList.toggle("is-on", kind === "fl");
-    btnTx.classList.toggle("is-on", kind === "tx");
-    btnCo.classList.toggle("is-on", kind === "co");
-    btnFl.setAttribute("aria-pressed", kind === "fl" ? "true" : "false");
-    btnTx.setAttribute("aria-pressed", kind === "tx" ? "true" : "false");
-    btnCo.setAttribute("aria-pressed", kind === "co" ? "true" : "false");
+    list.appendChild(frag);
+    empty.style.display = "none";
+    showingEl.textContent = "Showing " + end + " of " + items.length;
+    moreBtn.hidden = end >= items.length;
+  }
+
+  function render() {
+    paintChrome();
+    list.textContent = "";
+    var board = boards[state];
+    if (loading[state] || (!board && !errors[state])) {
+      empty.textContent = "Loading " + stateLabel[state] + " listings.";
+      empty.style.display = "block";
+      moreBtn.hidden = true;
+      showingEl.textContent = "";
+      countEl.textContent = "";
+      citiesEl.textContent = "";
+      return;
+    }
+    if (errors[state]) {
+      empty.textContent = "Could not load " + stateLabel[state] + " listings. " + errors[state] + " The other states still work.";
+      empty.style.display = "block";
+      moreBtn.hidden = true;
+      showingEl.textContent = "";
+      countEl.textContent = "";
+      citiesEl.textContent = "";
+      return;
+    }
+    fillCities(board.listings || []);
     apply();
+  }
+
+  function loadBoard(kind) {
+    if (boards[kind]) return Promise.resolve(boards[kind]);
+    if (inflight[kind]) return inflight[kind];
+    inflight[kind] = fetch(urls[kind]).then(function (res) {
+      if (!res.ok) throw new Error(urls[kind] + " returned " + res.status);
+      return res.json();
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.listings)) throw new Error(urls[kind] + " did not include listings.");
+      boards[kind] = data;
+      delete inflight[kind];
+      return data;
+    }).catch(function (err) {
+      delete inflight[kind];
+      throw err;
+    });
+    return inflight[kind];
   }
 
   function setState(next) {
@@ -853,35 +988,51 @@
     state = next;
     q.value = "";
     sort.value = "score";
+    shown = PAGE;
+    if (boards[next] || errors[next]) {
+      render();
+      return;
+    }
+    loading[next] = true;
     render();
-  }
-
-  btnFl.addEventListener("click", function () { setState("fl"); });
-  btnTx.addEventListener("click", function () { setState("tx"); });
-  btnCo.addEventListener("click", function () { setState("co"); });
-  q.addEventListener("input", apply);
-  sort.addEventListener("change", apply);
-
-  function load(url) {
-    return fetch(url).then(function (res) {
-      if (!res.ok) throw new Error(url + " returned " + res.status);
-      return res.json();
+    loadBoard(next).then(function () {
+      loading[next] = false;
+      if (state === next) render();
+    }).catch(function (err) {
+      loading[next] = false;
+      errors[next] = err && err.message ? err.message : "The file did not load.";
+      if (state === next) render();
     });
   }
 
-  empty.textContent = "Loading listings.";
-  empty.style.display = "block";
+  document.querySelector(".search").addEventListener("submit", function (event) {
+    event.preventDefault();
+  });
+  btnFl.addEventListener("click", function () { setState("fl"); });
+  btnTx.addEventListener("click", function () { setState("tx"); });
+  btnCo.addEventListener("click", function () { setState("co"); });
+  q.addEventListener("input", function () {
+    shown = PAGE;
+    if (boards[state]) apply();
+  });
+  sort.addEventListener("change", function () {
+    shown = PAGE;
+    if (boards[state]) apply();
+  });
+  moreBtn.addEventListener("click", function () {
+    shown += PAGE;
+    apply();
+  });
 
-  Promise.all([load("listings.json"), load("texas.json"), load("colorado.json")]).then(function (pair) {
-    boards.fl = pair[0];
-    boards.tx = pair[1];
-    boards.co = pair[2];
-    if (pair[1] && pair[1].rules) rulesTx.textContent = pair[1].rules;
-    if (pair[2] && pair[2].rules) rulesCo.textContent = pair[2].rules;
-    render();
+  empty.style.display = "block";
+  loading.fl = true;
+  loadBoard("fl").then(function () {
+    loading.fl = false;
+    if (state === "fl") render();
   }).catch(function (err) {
-    empty.textContent = "Could not load the listing files. " + (err && err.message ? err.message : "Try again.");
-    empty.style.display = "block";
+    loading.fl = false;
+    errors.fl = err && err.message ? err.message : "The file did not load.";
+    if (state === "fl") render();
   });
 })();
 </script>
