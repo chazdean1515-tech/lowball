@@ -14,15 +14,15 @@
 <meta property="og:site_name" content="Lowball">
 <meta property="og:title" content="Lowball — Motivated home sellers">
 <meta property="og:description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed.">
-<meta property="og:image" content="https://uselowball.com/og.jpg">
-<meta property="og:image:alt" content="Lowball wordmark. Motivated home sellers, ranked by price cuts, relists, and failed contracts.">
+<meta property="og:image" content="https://uselowball.com/og.jpg?v=3">
+<meta property="og:image:alt" content="Lowball. Find the most motivated sellers.">
 <meta property="og:url" content="https://uselowball.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Lowball — Motivated home sellers">
 <meta name="twitter:description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed.">
-<meta name="twitter:image" content="https://uselowball.com/og.jpg">
-<meta name="twitter:image:alt" content="Lowball wordmark. Motivated home sellers, ranked by price cuts, relists, and failed contracts.">
+<meta name="twitter:image" content="https://uselowball.com/og.jpg?v=3">
+<meta name="twitter:image:alt" content="Lowball. Find the most motivated sellers.">
 <style>
   @font-face {
     font-family: "Source Serif 4";
@@ -60,6 +60,16 @@
   }
   a { color: var(--ink); text-decoration: none; }
   a:hover { color: #000; }
+  .brand {
+    background: #000;
+    line-height: 0;
+  }
+  .brand img {
+    display: block;
+    width: min(100%, 960px);
+    height: auto;
+    margin: 0 auto;
+  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -206,7 +216,9 @@
     letter-spacing: -0.03em;
     font-weight: 650;
   }
-  .count { color: var(--muted); font-family: "Source Sans 3", "Avenir Next", sans-serif; font-weight: 500; font-size: 16px; }
+  .title-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .title-line h1 { margin: 0; }
+  .count { margin: 0; color: var(--muted); font-family: "Source Sans 3", "Avenir Next", sans-serif; font-weight: 500; font-size: 16px; white-space: nowrap; }
   .sort {
     display: flex;
     align-items: center;
@@ -310,7 +322,7 @@
   }
   .pill-k {
     font-weight: 650;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #3c3c3c;
@@ -502,8 +514,13 @@
   .rules .source-note { color: var(--ink); }
   .rules ol { margin: 8px 0 0; padding-left: 18px; }
   .rules li { margin: 0 0 4px; }
+  .board { position: relative; min-height: 100vh; }
   .empty {
     display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 2px;
@@ -544,7 +561,9 @@
     }
     .logo { font-size: 22px; }
     .search { height: 36px; }
+    .search { grid-column: 1 / -1; }
     .nav-row { grid-column: 1 / -1; justify-content: flex-start; }
+    .layout:not(.is-ready) .rail { display: none; }
     nav a, .state-btn { padding: 5px 8px; font-size: 14px; }
     .layout { grid-template-columns: 1fr; }
     .rail { position: static; max-height: none; overflow: visible; }
@@ -566,6 +585,9 @@
 </style>
 </head>
 <body>
+<div class="brand">
+  <img src="og.jpg?v=3" width="1200" height="630" alt="Lowball. Find the most motivated sellers.">
+</div>
 <header class="top">
   <div class="top-inner">
     <p class="logo"><img class="mark" src="favicon.svg" width="28" height="28" alt="" aria-hidden="true">Lowball <span id="logo-state">Florida</span></p>
@@ -588,7 +610,10 @@
 </header>
 <main class="page">
   <div class="results-head">
-    <h1>Motivated sellers in <span id="place">Florida</span> <span class="count" id="count"></span></h1>
+    <div class="title-line">
+      <h1>Motivated sellers in <span id="place">Florida</span></h1>
+      <p class="count" id="count"></p>
+    </div>
     <label class="sort">Sort
       <select id="sort">
         <option value="score" selected>Lowball score</option>
@@ -599,7 +624,7 @@
   </div>
   <p class="showing" id="showing" aria-live="polite"></p>
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
-  <div class="layout">
+  <div class="layout" id="layout">
     <div class="board">
       <aside class="move-cta" aria-label="Moving quote">
         <h2>Planning a move?</h2>
@@ -619,31 +644,16 @@
       <div class="mapbox" id="map-fl">
         <svg viewBox="0 0 220 280" role="img" aria-label="Simple outline of Florida">
           <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M14 86 L52 74 L86 78 L104 96 L116 122 L128 156 L136 188 L130 214 L146 236 L158 258 L146 266 L126 246 L116 222 L108 196 L100 168 L90 140 L76 114 L58 98 L30 96 Z"/>
-          <circle cx="40" cy="84" r="3.5" fill="#3c3c3c"/>
-          <circle cx="118" cy="108" r="3.5" fill="#3c3c3c"/>
-          <circle cx="108" cy="150" r="3.5" fill="#3c3c3c"/>
-          <circle cx="124" cy="188" r="3.5" fill="#3c3c3c"/>
-          <circle cx="136" cy="230" r="3.5" fill="#3c3c3c"/>
         </svg>
       </div>
       <div class="mapbox" id="map-tx" hidden>
         <svg viewBox="0 0 260 240" role="img" aria-label="Simple outline of Texas">
           <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M10 36 L128 32 L130 70 L176 86 L214 98 L236 128 L220 162 L186 184 L150 208 L112 214 L74 196 L46 160 L28 118 L16 72 Z"/>
-          <circle cx="70" cy="48" r="3.5" fill="#3c3c3c"/>
-          <circle cx="150" cy="120" r="3.5" fill="#3c3c3c"/>
-          <circle cx="168" cy="150" r="3.5" fill="#3c3c3c"/>
-          <circle cx="100" cy="170" r="3.5" fill="#3c3c3c"/>
-          <circle cx="60" cy="130" r="3.5" fill="#3c3c3c"/>
         </svg>
       </div>
       <div class="mapbox" id="map-co" hidden>
         <svg viewBox="0 0 260 180" role="img" aria-label="Simple outline of Colorado">
           <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M18 28 L242 28 L242 152 L18 152 Z"/>
-          <circle cx="150" cy="78" r="3.5" fill="#3c3c3c"/>
-          <circle cx="168" cy="70" r="3.5" fill="#3c3c3c"/>
-          <circle cx="155" cy="118" r="3.5" fill="#3c3c3c"/>
-          <circle cx="140" cy="48" r="3.5" fill="#3c3c3c"/>
-          <circle cx="70" cy="90" r="3.5" fill="#3c3c3c"/>
         </svg>
       </div>
       <ul class="cities" id="cities"></ul>
@@ -652,19 +662,19 @@
         <p class="source-note" id="source-fl">Florida rows were read from public Zillow pages, plus some earlier Redfin pages.</p>
         <p class="source-note" id="source-tx" hidden>Texas rows were read from public Zillow pages. A few earlier Texas listings were read from Redfin.</p>
         <p class="source-note" id="source-co" hidden>Colorado rows were read from public Zillow price-reduced lists. Some were checked again on the Redfin listing page.</p>
-        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100.</p>
+        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100. A rent amount in the price history is not a cut.</p>
         <ol>
-          <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0.</li>
-          <li>Number of cuts on this listing: 5 each, up to 15.</li>
+          <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0. Rent amounts are left out.</li>
+          <li>Number of cuts on this listing: 5 each, up to 15. Rent amounts are left out.</li>
           <li>Days on market: days divided by 12, up to 10. About 120 days or more is 10.
             <span id="dom-fl">Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow or days on Redfin, whichever that page printed.</span>
             <span id="dom-tx" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow, because these rows were read from Zillow. The earlier Redfin listings use days on Redfin.</span>
             <span id="dom-co" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow. Listings checked on a Redfin page use the day count printed there.</span>
           </li>
           <li>Drop from the first ask on this listing: 1 point per percent, up to 10.</li>
-          <li>Off market, then back, or expired and relisted: 12.</li>
-          <li>Relisted under the prior ask: 8 more.</li>
-          <li>Pending or contingent, then back on the market: 12. More than once is mentioned, not extra points.</li>
+          <li>Off market, then back, or expired and relisted: 12, when that removal or relist is dated within the 12 months before the board date. Older history is ignored.</li>
+          <li>Relisted under the prior ask: 8 more, for a return inside that same 12-month window. A rent amount does not count.</li>
+          <li>Pending or contingent, then back on the market: 12, when that pending or contingent date is within the 12 months before the board date. More than once is mentioned, not extra points.</li>
           <li>Under the tax assessment or under the last sale: 6.</li>
           <li>Vacant, moved, tenant, estate, divorce, relocation, or seller-financing language: 4.</li>
           <li>Remarks say motivated, bring offers, price improved, or similar: 4.</li>
@@ -851,6 +861,7 @@
     card.appendChild(rank);
 
     var ph = el("div", "ph", "No photo available");
+    ph.setAttribute("aria-hidden", "true");
     card.appendChild(ph);
 
     var body = el("div", "body");
@@ -873,9 +884,12 @@
     body.appendChild(row);
 
     if (item.price != null && item.price !== "") body.appendChild(el("div", "price", money(item.price)));
-    var fetchedIso = item.fetched || (board && board.fetched);
-    var fetchedLabel = formatFetched(fetchedIso);
-    if (fetchedLabel) body.appendChild(el("p", "fetched", "As of " + fetchedLabel));
+    if (item.fetched) {
+      var fetchedLabel = formatFetched(item.fetched);
+      if (fetchedLabel) body.appendChild(el("p", "fetched", "As of " + fetchedLabel));
+    } else {
+      body.appendChild(el("p", "fetched", "Earlier fetch"));
+    }
 
     var reasons = Array.isArray(item.reasons) ? item.reasons : [];
     var bestI = reasons.length ? strongestIndex(reasons) : -1;
@@ -996,6 +1010,15 @@
     moreBtn.hidden = end >= items.length;
   }
 
+  var layout = document.getElementById("layout");
+  var rail = document.getElementById("map");
+
+  function syncOffset() {
+    var header = document.querySelector(".top");
+    if (!header) return;
+    document.documentElement.style.setProperty("--header-offset", Math.ceil(header.getBoundingClientRect().height) + "px");
+  }
+
   function render() {
     paintChrome();
     list.textContent = "";
@@ -1016,10 +1039,12 @@
       showingEl.textContent = "";
       countEl.textContent = "";
       citiesEl.textContent = "";
+      layout.classList.add("is-ready");
       return;
     }
     fillCities(board.listings || []);
     apply();
+    layout.classList.add("is-ready");
   }
 
   function loadBoard(kind) {
@@ -1065,6 +1090,21 @@
   document.querySelector(".search").addEventListener("submit", function (event) {
     event.preventDefault();
   });
+  document.querySelector('a[href="#map"]').addEventListener("click", function (event) {
+    event.preventDefault();
+    rail.scrollTop = 0;
+    rail.scrollIntoView({behavior: "smooth", block: "start"});
+  });
+  document.querySelector('a[href="#score"]').addEventListener("click", function (event) {
+    var wide = window.matchMedia("(min-width: 861px)").matches;
+    if (!wide) return;
+    event.preventDefault();
+    var score = document.getElementById("score");
+    rail.scrollTop = Math.max(0, score.offsetTop - 8);
+    rail.scrollIntoView({behavior: "smooth", block: "start"});
+  });
+  syncOffset();
+  window.addEventListener("resize", syncOffset);
   btnFl.addEventListener("click", function () { setState("fl"); });
   btnTx.addEventListener("click", function () { setState("tx"); });
   btnCo.addEventListener("click", function () { setState("co"); });
