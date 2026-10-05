@@ -1,0 +1,9 @@
+{
+  "timezone": "America/New_York",
+  "last_fetch": "2026-10-05T07:44:51-04:00",
+  "last_fetch_date": "2026-10-05",
+  "rule": "refresh.py adds a new home only when its latest Zillow price cut is dated on or after last_fetch_date. Updated after each complete, written run.",
+  "last_run": {
+    "note": "Seeded from the Oct 5, 2026 daily refresh (commit 47a80a2), which kept only Oct 4-5 cuts."
+  }
+}
