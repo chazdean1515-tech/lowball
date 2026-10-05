@@ -466,7 +466,7 @@
       </select>
     </label>
   </div>
-  <p class="disclaimer">Numbers are from public listings fetched October 3, 2026, not a live feed.</p>
+  <p class="disclaimer" id="disclaimer">Numbers are from public listings, not a live feed.</p>
   <div class="layout">
     <section id="list" aria-label="Listings">
       <p class="empty" id="empty">No listings match that search.</p>
@@ -552,11 +552,32 @@
   var btnFl = document.getElementById("show-fl");
   var btnTx = document.getElementById("show-tx");
   var btnCo = document.getElementById("show-co");
+  var disclaimer = document.getElementById("disclaimer");
   var boards = { fl: null, tx: null, co: null };
   var state = "fl";
   var stateLabel = { fl: "Florida", tx: "Texas", co: "Colorado" };
   var stateAbbr = { fl: "FL", tx: "TX", co: "CO" };
   var stateSlug = { fl: "florida", tx: "texas", co: "colorado" };
+
+  function formatFetched(iso) {
+    if (!iso) return null;
+    var parts = String(iso).split("-");
+    if (parts.length !== 3) return iso;
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var m = parseInt(parts[1], 10) - 1;
+    var d = parseInt(parts[2], 10);
+    var y = parts[0];
+    if (m < 0 || m > 11 || !d || !y) return iso;
+    return months[m] + " " + d + ", " + y;
+  }
+
+  function updateDisclaimer(board) {
+    if (!disclaimer) return;
+    var label = formatFetched(board && board.fetched);
+    disclaimer.textContent = label
+      ? ("Numbers are from public listings fetched " + label + ", not a live feed.")
+      : "Numbers are from public listings, not a live feed.";
+  }
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);
