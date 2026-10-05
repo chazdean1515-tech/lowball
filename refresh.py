@@ -684,6 +684,9 @@ def apply_to_existing(kind: str, listing: dict, obs: dict) -> str:
             cut_changed,
             dom_changed,
         )
+    listing["fetched"] = today_iso()
+    listing.pop("verified_from", None)
+    listing.pop("verifiedFrom", None)
     return "updated"
 
 
@@ -705,12 +708,7 @@ def new_listing(kind: str, obs: dict) -> dict:
     beds = obs["beds"]
     baths = obs["baths"]
     sqft = obs["sqft"] if isinstance(obs["sqft"], (int, float)) and obs["sqft"] > 0 else None
-    verified = (
-        f"Zillow price-reduced search list fetched {today_iso()}. "
-        "Only the latest cut printed in that list, the one cut it shows, and days on Zillow "
-        "were scored. Earlier cuts, the drop from the first ask, off-market, relist, "
-        "fall-through, assessment, and remarks were not scored because the list did not print them."
-    )
+    fetched = today_iso()
     if kind == "fl":
         street = obs["street"].title()
         bits = []
@@ -753,7 +751,7 @@ def new_listing(kind: str, obs: dict) -> dict:
             "source": "Zillow",
             "mls": None,
             "zpid": obs["zpid"],
-            "verified_from": verified,
+            "fetched": fetched,
             "original": False,
         }
     points = {"latestCut": float(latest), "cuts": 5.0}
@@ -778,7 +776,7 @@ def new_listing(kind: str, obs: dict) -> dict:
         "reasons": reasons,
         "score": score,
         "points": points,
-        "verifiedFrom": verified,
+        "fetched": fetched,
     }
 
 
@@ -952,7 +950,61 @@ def counts_changed(kind: str, board: dict) -> None:
     board["fetched"] = today_iso()
 
 
+INTERNAL_BOARD_KEYS = ("note", "blocked", "leftOff")
+# Published Texas rules used to say "days on Redfin" even though the rows came from Zillow.
+TX_RULES_DOM_OLD = "otherwise days on Redfin."
+TX_RULES_DOM_NEW = "otherwise days on Zillow. A few earlier Texas listings use days on Redfin."
+
+
+def extract_fetched(text: str) -> str | None:
+    match = re.search(r"\d{4}-\d{2}-\d{2}", text)
+    if match:
+        return match.group(0)
+    match = re.search(
+        r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),\s+(\d{4})",
+        text,
+        re.I,
+    )
+    if not match:
+        return None
+    try:
+        parsed = datetime.strptime(
+            f"{match.group(1)[:3]} {int(match.group(2))} {match.group(3)}",
+            "%b %d %Y",
+        )
+    except ValueError:
+        return None
+    return parsed.date().isoformat()
+
+
+def scrub_published(board: dict) -> bool:
+    """Drop scrape notes before a board is written to the public JSON files."""
+    changed = False
+    for key in INTERNAL_BOARD_KEYS:
+        if key in board:
+            board.pop(key, None)
+            changed = True
+    rules = board.get("rules")
+    if isinstance(rules, str) and TX_RULES_DOM_OLD in rules:
+        board["rules"] = rules.replace(TX_RULES_DOM_OLD, TX_RULES_DOM_NEW)
+        changed = True
+    for row in board.get("listings") or []:
+        if not isinstance(row, dict):
+            continue
+        narrative = None
+        for old in ("verified_from", "verifiedFrom"):
+            if old in row:
+                narrative = row.pop(old)
+                changed = True
+        if narrative and not row.get("fetched"):
+            found = extract_fetched(str(narrative))
+            if found:
+                row["fetched"] = found
+    return changed
+
+
 def write_if_changed(path: Path, before: str, board: dict, dry_run: bool) -> bool:
+    scrub_published(board)
     after = json.dumps(board, indent=2, ensure_ascii=False) + "\n"
     if after == before:
         print(f"{path.name}: no change, not rewritten")
@@ -1001,6 +1053,9 @@ def _finish(
     budget,
     state,
 ) -> int:
+    for kind in boards:
+        if scrub_published(boards[kind]):
+            changed[kind] = True
     labels = [("fl", "listings.json", "Florida"), ("tx", "texas.json", "Texas"), ("co", "colorado.json", "Colorado")]
     for kind, fname, _label in labels:
         if changed[kind]:
@@ -1078,15 +1133,11 @@ def empty_co_board() -> dict:
         "count": 0,
         "originalCount": 0,
         "newCount": 0,
-        "note": (
-            "Colorado board seeded from public Zillow price-reduced city lists for Denver metro "
-            "and major CO cities. Same scoring rules as Florida and Texas. Only the latest cut "
-            "printed in each list, the one cut it shows, and days on Zillow were scored on new rows."
-        ),
         "rules": (
             "Points only when the listing page shows the signal. Latest cut percent times 2.3, "
             "cap 25. Cuts on the current MLS number, 5 each, cap 15. DOM days/12, cap 10, using "
-            "days on market when printed, otherwise days on Redfin or Zillow. Drop from the first "
+            "days on market when printed, otherwise days on Zillow. A listing checked on Redfin "
+            "uses the day count that page printed. Drop from the first "
             "ask on the current listing, 1 point per percent, cap 10. Off the market then back, 12. "
             "Relisted under the prior ask, 8, only when that price is printed and lower. Pending or "
             "contingent then back, 12, not also off-then-back unless a separate removal is shown. "
@@ -1215,6 +1266,16 @@ def self_test() -> int:
     }
     created = new_listing("fl", obs)
     again = new_listing("fl", obs)
+    if created.get("verified_from") or created.get("verifiedFrom") or "note" in created:
+        print("self-test failed: new listing published an internal note", file=sys.stderr)
+        return 1
+    if created.get("fetched") != today_iso():
+        print("self-test failed: new listing missing fetched date", file=sys.stderr)
+        return 1
+    empty = empty_co_board()
+    if any(key in empty for key in INTERNAL_BOARD_KEYS):
+        print("self-test failed: empty Colorado board has an internal note", file=sys.stderr)
+        return 1
     if created["score"] != again["score"] or created["latest_cut_percent"] != 7.3:
         print("self-test failed: new listing not stable", file=sys.stderr)
         return 1
