@@ -131,12 +131,39 @@
   .state-btn.is-on { background: var(--char); color: #fff; }
   .state-btn.is-on:hover { background: var(--char-dark); color: #fff; }
   .coming-soon {
-    margin: 0;
-    padding: 0 20px 12px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    margin: 0 auto 12px;
+    padding: 6px 18px;
+    background: #000;
+    color: #a6ff00;
+    border: 1px solid #a6ff00;
+    border-radius: 999px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-shadow: 0 0 6px rgba(166,255,0,.55);
+    box-shadow: 0 0 0 1px rgba(166,255,0,.15), 0 0 14px rgba(166,255,0,.35);
+    animation: coming-soon-glow 2.4s ease-in-out infinite;
+  }
+  .coming-soon::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #a6ff00;
+    box-shadow: 0 0 8px #a6ff00;
+    flex: none;
+  }
+  @keyframes coming-soon-glow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(166,255,0,.15), 0 0 10px rgba(166,255,0,.25); }
+    50% { box-shadow: 0 0 0 1px rgba(166,255,0,.3), 0 0 22px rgba(166,255,0,.55); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .coming-soon { animation: none; }
   }
   .page {
     max-width: 1180px;
