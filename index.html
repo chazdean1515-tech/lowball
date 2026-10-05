@@ -822,6 +822,7 @@
     var kind = state;
     cards().forEach(function (card) { card.remove(); });
     if (!board) return;
+    updateDisclaimer(board);
     var items = board.listings.slice().sort(function (a, b) {
       return Number(b.score) - Number(a.score);
     });
