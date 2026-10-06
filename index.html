@@ -1309,12 +1309,12 @@
       button.className = "city-btn";
       button.setAttribute("data-city", group.key);
       button.setAttribute("aria-pressed", on ? "true" : "false");
-      button.setAttribute("aria-label", group.label + ", " + group.count + " " + noun + (on ? ". Clear this city filter." : ". Filter the board to this city."));
       var dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
       button.appendChild(dot);
       button.appendChild(el("span", "cname", group.label));
       button.appendChild(el("span", "ccount", String(group.count)));
+      button.appendChild(el("span", "sr-only", " " + noun + (on ? ". Clear this city filter." : ". Filter the board to this city.")));
       button.addEventListener("click", function () { toggleCity(group.key); });
       li.appendChild(button);
       citiesEl.appendChild(li);
