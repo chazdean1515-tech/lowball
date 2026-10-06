@@ -1185,7 +1185,9 @@ def empty_co_board() -> dict:
             "remarks, 4. Half up to one decimal. Cap 100. Off the market, a relist under the prior "
             "ask, or a pending or contingent sale scores only when that event is dated within the "
             "12 months before this board's fetched date. Older history is ignored. A rent amount "
-            "in the price history is not a price cut."
+            "in the price history is not a price cut. A relist counts only when the new listing "
+            "started after the prior listing ended. Rows with no fetch date are earlier fetches "
+            "and are listed after dated rows."
         ),
         "listings": [],
     }

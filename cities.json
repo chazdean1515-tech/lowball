@@ -205,7 +205,6 @@
       -81.732743
     ]
   },
-  "note": "Latitude, longitude for each city string on the boards. Census Gazetteer internal points, plus geo/communities.json for places that are not census places. No runtime geocoder.",
   "tx": {
     "Abilene": [
       32.454514,

@@ -6,10 +6,11 @@ JSON, so community floor plans, wrong links, duplicate addresses, rental
 history, and relist or pending events older than 12 months do not come back.
 
 The recency window is the 12 months before the board's fetched date. An
-off-market return uses the removal date. A pending or contingent return
-counts when any of its pending dates falls in the window. A history price
-under $20,000 on a home listed at $40,000 or more is treated as rent and is
-not a price cut.
+off-market return uses the removal date, and it counts only when the new
+listing started after that removal. A pending or contingent return counts
+when any of its pending dates falls in the window. A history price under
+$20,000 on a home listed at $40,000 or more is treated as rent and is not a
+price cut. The card price is the price after the latest cut.
 """
 
 from __future__ import annotations
@@ -30,8 +31,19 @@ MIN_HOME_PRICE = 10_000
 RULES_SENTENCE = (
     " Off the market, a relist under the prior ask, or a pending or contingent "
     "sale scores only when that event is dated within the 12 months before this "
-    "board's fetched date. Older history is ignored. A rent amount in the price "
-    "history is not a price cut."
+    "board's fetched date. Older history is ignored. A relist counts only when "
+    "the new listing started after the prior listing ended. A rent amount in the "
+    "price history is not a price cut."
+)
+UNDATED_SENTENCE = (
+    " Rows with no fetch date are earlier fetches and are listed after dated rows."
+)
+RELIST_LINE_RE = re.compile(
+    r"^Prior listing removed (.+?), then this one started (.+?)\. \+12(?:\.0)?\.?$"
+)
+DROP_RE = re.compile(
+    r"^(Down from .+? of )\$([0-9][0-9,]*)(.*?)(\. That is )[0-9.]+"
+    r"(% off the original ask\. \+)[0-9.]+( of 10\.)$"
 )
 STREET = {
     "STREET": "ST",
@@ -463,6 +475,172 @@ def apply_rental_cuts(reasons: list[str], list_price) -> tuple[list[str], dict]:
     return kept, updates
 
 
+def relist_started_after_removal(removed: str, started: str) -> bool:
+    """A relist counts only when the new listing starts after the prior one ends."""
+    removal_dates = parse_dates(removed or "")
+    start_dates = parse_dates(started or "")
+    if not removal_dates or not start_dates:
+        return True
+    return start_dates[0] >= removal_dates[0]
+
+
+def relist_lines_overlap(text: str) -> bool:
+    match = RELIST_LINE_RE.match((text or "").strip())
+    if not match:
+        return False
+    return not relist_started_after_removal(match.group(1), match.group(2))
+
+
+def apply_relist_order(reasons: list[str]) -> list[str]:
+    """Drop the +12 relist, and its companion line, when the two listings overlapped."""
+    out = []
+    drop_companion = False
+    for reason in reasons:
+        if is_relist_reason(reason) and relist_lines_overlap(reason):
+            drop_companion = True
+            continue
+        if drop_companion and is_relist_companion(reason):
+            drop_companion = False
+            continue
+        drop_companion = False
+        out.append(reason)
+    return out
+
+
+def repair_cut_pairs(pairs: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    """Drop a duplicated cut list, then chain two cuts that both start at the same price."""
+    cleaned = list(pairs)
+    while len(cleaned) >= 2 and len(cleaned) % 2 == 0:
+        half = len(cleaned) // 2
+        if cleaned[:half] != cleaned[half:]:
+            break
+        cleaned = cleaned[:half]
+    deduped: list[tuple[int, int]] = []
+    for pair in cleaned:
+        if pair not in deduped:
+            deduped.append(pair)
+    chained: list[tuple[int, int]] = []
+    for frm, to in deduped:
+        if chained and frm == chained[-1][0] and to < chained[-1][1]:
+            frm = chained[-1][1]
+        if to < frm:
+            chained.append((frm, to))
+    return chained
+
+
+def _rewrite_cuts_reason(reason: str, pairs: list[tuple[int, int]]) -> str:
+    match = CUTS_RE.match(reason)
+    if not match:
+        return reason
+    n_cuts = len(pairs)
+    pts = _count_points(n_cuts)
+    prefix = match.group(2) or ""
+    trail = ", ".join(f"{money(frm)} to {money(to)}" for frm, to in pairs)
+    label = "cut" if n_cuts == 1 else "cuts"
+    return f"{n_cuts} {label}{prefix} ({trail}). +{float(pts):.1f} of 15."
+
+
+def _latest_cut_line(frm: int, to: int, when: str | None) -> tuple[str, float, float]:
+    pct = round1((Decimal(frm - to) / Decimal(frm)) * Decimal(100))
+    pts = _cut_points(pct)
+    dated = f" on {when}" if when else ""
+    line = (
+        f"Latest cut is {float(pct)}%, from {money(frm)} to {money(to)}{dated}. "
+        f"+{float(pts)} of 25."
+    )
+    return line, float(pct), float(pts)
+
+
+def _reprice_drop(reason: str, price: int) -> str | None:
+    match = DROP_RE.match(reason)
+    if not match:
+        return reason
+    first = int(match.group(2).replace(",", ""))
+    if price >= first:
+        return None
+    pct = round1((Decimal(first - price) / Decimal(first)) * Decimal(100))
+    pts = min(Decimal(10), pct)
+    pts = round1(pts)
+    return (
+        f"{match.group(1)}{money(first)}{match.group(3)}{match.group(4)}"
+        f"{float(pct)}{match.group(5)}{float(pts)}{match.group(6)}"
+    )
+
+
+def apply_listed_price(row: dict, reasons: list[str]) -> tuple[list[str], dict]:
+    """Make the card price and the latest cut describe the same current price.
+
+    A cut list that was pasted twice is kept once. Two cuts that both start at
+    the same ask are chained, so the later one starts where the earlier one ended.
+    """
+    updates: dict = {}
+    latest_idx = None
+    latest = None
+    cuts_idx = None
+    for i, reason in enumerate(reasons):
+        if latest is None and reason.lower().startswith("latest cut"):
+            match = LATEST_RE.search(reason)
+            if match and match.group(2) and match.group(3):
+                latest_idx = i
+                latest = {
+                    "frm": int(match.group(2).replace(",", "")),
+                    "to": int(match.group(3).replace(",", "")),
+                    "date": match.group(4),
+                }
+        if cuts_idx is None and CUTS_RE.match(reason):
+            cuts_idx = i
+    out = list(reasons)
+    chain_end = None
+    if cuts_idx is not None:
+        parsed = [
+            (int(frm.replace(",", "")), int(to.replace(",", "")))
+            for frm, to in PAIR_RE.findall(out[cuts_idx])
+        ]
+        repaired = repair_cut_pairs(parsed)
+        if repaired and repaired != parsed:
+            out[cuts_idx] = _rewrite_cuts_reason(out[cuts_idx], repaired)
+            updates["cuts"] = len(repaired)
+            updates["cuts_points"] = float(_count_points(len(repaired)))
+            chain_end = repaired[-1]
+    # Rewrite the latest-cut line only when the repaired chain ends at the same
+    # price and the step that got there started lower than the printed "from".
+    if (
+        chain_end
+        and latest
+        and chain_end[1] == latest["to"]
+        and chain_end[0] != latest["frm"]
+    ):
+        line, pct, pts = _latest_cut_line(chain_end[0], chain_end[1], latest["date"])
+        out[latest_idx] = line
+        latest = {"frm": chain_end[0], "to": chain_end[1], "date": latest["date"]}
+        updates["cut_percent"] = pct
+        updates["cut_dollars"] = chain_end[0] - chain_end[1]
+        updates["latest_points"] = pts
+    if not latest:
+        return out, updates
+    try:
+        price = int(row.get("price"))
+    except (TypeError, ValueError):
+        return out, updates
+    if price == latest["to"]:
+        return out, updates
+    out_price = latest["to"]
+    updates["price"] = out_price
+    repriced = []
+    for reason in out:
+        if reason.lower().startswith("down from "):
+            revised = _reprice_drop(reason, out_price)
+            if revised:
+                repriced.append(revised)
+            continue
+        if reason.lower().startswith("list price is under"):
+            amounts = [int(amount.replace(",", "")) for amount in re.findall(r"\$([0-9,]+)", reason)]
+            if amounts and not any(out_price < amount for amount in amounts):
+                continue
+        repriced.append(reason)
+    return repriced, updates
+
+
 def _sync_points(row: dict, reasons: list[str], updates: dict) -> None:
     points = row.get("points")
     if not isinstance(points, dict):
@@ -498,6 +676,8 @@ def _sync_points(row: dict, reasons: list[str], updates: dict) -> None:
 
 
 def _apply_cut_fields(kind: str, row: dict, updates: dict) -> None:
+    if "price" in updates:
+        row["price"] = updates["price"]
     if "cut_percent" in updates:
         if kind == "fl":
             row["latest_cut_percent"] = updates["cut_percent"]
@@ -522,6 +702,9 @@ def rescore_row(kind: str, row: dict, cutoff: date) -> bool:
     reasons = apply_remarks(original)
     reasons = apply_recency(reasons, cutoff, row.get("price"))
     reasons, updates = apply_rental_cuts(reasons, row.get("price"))
+    reasons = apply_relist_order(reasons)
+    reasons, price_updates = apply_listed_price(row, reasons)
+    updates.update(price_updates)
     changed = reasons != original or bool(updates)
     if not changed and "deepened" not in row:
         city = row.get("city")
@@ -579,6 +762,20 @@ def keep_rank(kind: str, row: dict) -> tuple:
     )
 
 
+def board_sort_key(row: dict) -> tuple:
+    """Dated rows first, then score. A row with no fetch date is an earlier fetch."""
+    dated = 0 if row.get("fetched") else 1
+    try:
+        score = float(row.get("score") or 0)
+    except (TypeError, ValueError):
+        score = 0.0
+    try:
+        dom = float(row.get("dom") or 0)
+    except (TypeError, ValueError):
+        dom = 0.0
+    return (dated, -score, -dom, str(row.get("address") or ""))
+
+
 def prepare_board(board: dict, kind: str) -> dict:
     """Filter and rescore one board in place. Returns counts for the summary."""
     cutoff = board_cutoff(board)
@@ -623,6 +820,7 @@ def prepare_board(board: dict, kind: str) -> dict:
     for row in listings:
         if rescore_row(kind, row, cutoff):
             stats["rescored"] += 1
+    listings.sort(key=board_sort_key)
     board["listings"] = listings
     board["count"] = len(listings)
     if "original_count" in board:
@@ -635,7 +833,17 @@ def prepare_board(board: dict, kind: str) -> dict:
         board["newCount"] = board["count"] - original
     rules = board.get("rules")
     if isinstance(rules, str) and "12 months" not in rules:
-        board["rules"] = rules.rstrip() + RULES_SENTENCE
+        rules = rules.rstrip() + RULES_SENTENCE
+    if isinstance(rules, str) and "after the prior listing ended" not in rules:
+        rules = rules.rstrip() + (
+            " A relist counts only when the new listing started after the prior listing ended."
+            if "12 months" in rules
+            else ""
+        )
+    if isinstance(rules, str) and "no fetch date" not in rules:
+        rules = rules.rstrip() + UNDATED_SENTENCE
+    if isinstance(rules, str):
+        board["rules"] = rules
     stats["after"] = len(listings)
     stats["removed"] = stats["before"] - stats["after"]
     return stats
@@ -762,6 +970,83 @@ def self_test() -> int:
     again = prepare_board(board, "co")
     if again["removed"] or again["rescored"]:
         print("self-test failed: not idempotent", again, file=__import__("sys").stderr)
+        return 1
+    if "after the prior listing ended" not in board["rules"] or "no fetch date" not in board["rules"]:
+        print("self-test failed: rules sentences", board["rules"], file=__import__("sys").stderr)
+        return 1
+
+    overlap = {
+        "address": "1426 Rembrandt Rd",
+        "city": "Boulder",
+        "price": 2850000,
+        "cutPercent": 19.3,
+        "fetched": "2026-10-05",
+        "reasons": [
+            "Latest cut is 19.3%, from $2,850,000 to $2,300,000 on Sep 21, 2026. +25.0 of 25.",
+            "2 cuts on MLS #6481690 ($2,850,000 to $2,350,000, $2,850,000 to $2,300,000). +10.0 of 15.",
+            "514 days on Zillow. +10.0 of 10.",
+            "Prior listing removed Apr 30, 2026, then this one started May 8, 2025. +12.",
+            "Came back at $2,350,000, not under the prior $2,350,000 ask. Not lower, so the extra relist points are not added.",
+        ],
+        "score": 57,
+        "points": {"latestCut": 25, "cuts": 10, "offThenBack": 12},
+    }
+    rescore_row("co", overlap, cutoff)
+    overlap_blob = " ".join(overlap["reasons"])
+    if "+12" in overlap_blob or "May 8, 2025" in overlap_blob:
+        print("self-test failed: overlapping relist kept", overlap["reasons"], file=__import__("sys").stderr)
+        return 1
+    if overlap["price"] != 2300000 or "from $2,850,000 to $2,300,000" in overlap_blob:
+        print("self-test failed: rembrandt price", overlap["price"], overlap["reasons"], file=__import__("sys").stderr)
+        return 1
+    if "from $2,350,000 to $2,300,000" not in overlap_blob:
+        print("self-test failed: rembrandt chain", overlap["reasons"], file=__import__("sys").stderr)
+        return 1
+    kept_relist = {
+        "address": "1 Same Day",
+        "city": "Denver",
+        "price": 500000,
+        "reasons": [
+            "Prior listing removed Jul 21, 2026, then this one started Jul 21, 2026. +12.",
+            "Came back at $500,000, under the prior $600,000 ask. +8.",
+        ],
+        "score": 20,
+    }
+    rescore_row("co", kept_relist, cutoff)
+    if not any(is_relist_reason(reason) for reason in kept_relist["reasons"]):
+        print("self-test failed: same-day relist dropped", kept_relist["reasons"], file=__import__("sys").stderr)
+        return 1
+    stale = {
+        "address": "2725 8Th St",
+        "city": "Boulder",
+        "price": 2058000,
+        "cutPercent": 5.0,
+        "reasons": [
+            "Latest cut is 5.0%, from $2,058,000 to $1,956,000 on Sep 17, 2026. +11.4 of 25.",
+            "3 cuts on MLS #4312354 ($2,200,000 to $2,058,000, $2,200,000 to $2,058,000, $2,058,000 to $1,956,000). +15.0 of 15.",
+            "Down from the Jun 7, 2026 ask of $2,200,000. That is 6.5% off the original ask. +6.5 of 10.",
+        ],
+        "score": 32.9,
+        "points": {"latestCut": 11.4, "cuts": 15, "dropFromFirstAsk": 6.5},
+    }
+    rescore_row("co", stale, cutoff)
+    if stale["price"] != 1956000 or stale["reasons"][1].startswith("3 cuts"):
+        print("self-test failed: duplicate cut or price", stale["price"], stale["reasons"], file=__import__("sys").stderr)
+        return 1
+    if "10.0 of 10" not in stale["reasons"][2]:
+        print("self-test failed: drop not repriced", stale["reasons"], file=__import__("sys").stderr)
+        return 1
+    order_board = {
+        "fetched": "2026-10-05",
+        "rules": "Points only when the listing page shows the signal.",
+        "listings": [
+            {"address": "Old High", "city": "Austin", "price": 100000, "score": 70, "reasons": [], "dom": 10},
+            {"address": "New Low", "city": "Austin", "price": 100000, "score": 20, "reasons": [], "fetched": "2026-10-03", "dom": 10},
+        ],
+    }
+    prepare_board(order_board, "tx")
+    if [row["address"] for row in order_board["listings"]] != ["New Low", "Old High"]:
+        print("self-test failed: undated sort", order_board["listings"], file=__import__("sys").stderr)
         return 1
     print("listing_rules self-test ok")
     return 0
