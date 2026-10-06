@@ -347,6 +347,24 @@
     text-transform: uppercase;
     color: #3c3c3c;
   }
+  .addr-col { min-width: 0; }
+  .crypto {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 6px 0 0;
+    padding: 2px 7px 2px 4px;
+    border: 1px solid #d9d9d4;
+    background: #f4f4f1;
+    color: #3c3c3c;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .crypto-mark { display: block; flex: none; }
   .price {
     font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
     font-size: 24px;
@@ -951,6 +969,68 @@
     return s;
   }
 
+  // Seller remarks are not stored on their own. The boards keep a quote only
+  // inside reasons, plus cryptoMention when a Colorado page read saved one.
+  // The badge uses that printed text. Addresses stay out so a street token
+  // cannot qualify. Word boundaries keep "btc" inside another word from matching.
+  var CRYPTO_RE = /\b(?:crypto(?:s|currency|currencies)?|bitcoins?|btc|ethereums?|eth|usdc)\b/i;
+  var CRYPTO_KEYS = ["reasons", "remarks", "description", "listingRemarks", "publicRemarks", "cryptoMention"];
+
+  function cryptoTexts(item) {
+    var texts = [];
+    CRYPTO_KEYS.forEach(function (key) {
+      var value = item[key];
+      if (typeof value === "string") {
+        if (value) texts.push(value);
+      } else if (Array.isArray(value)) {
+        value.forEach(function (part) {
+          if (typeof part === "string" && part) texts.push(part);
+        });
+      }
+    });
+    return texts;
+  }
+
+  function cryptoMatch(item) {
+    var texts = cryptoTexts(item);
+    for (var i = 0; i < texts.length; i++) {
+      var match = texts[i].match(CRYPTO_RE);
+      if (!match) continue;
+      var start = Math.max(0, match.index - 40);
+      var end = Math.min(texts[i].length, match.index + match[0].length + 40);
+      return texts[i].slice(start, end).replace(/\s+/g, " ").trim();
+    }
+    return "";
+  }
+
+  function bitcoinIcon() {
+    var ns = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("class", "crypto-mark");
+    svg.setAttribute("width", "14");
+    svg.setAttribute("height", "14");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    var circle = document.createElementNS(ns, "path");
+    circle.setAttribute("fill", "#f7931a");
+    circle.setAttribute("d", "M23.638 14.904c-1.602 6.43-8.113 10.34-14.542 8.736C2.67 22.05-1.244 15.525.362 9.105 1.962 2.67 8.475-1.243 14.9.358c6.43 1.605 10.342 8.115 8.738 14.546z");
+    var mark = document.createElementNS(ns, "path");
+    mark.setAttribute("fill", "#fff");
+    mark.setAttribute("d", "M17.077 10.48c.24-1.59-.974-2.445-2.633-3.016l.538-2.16-1.313-.327-.524 2.1c-.346-.086-.7-.167-1.054-.248l.527-2.114-1.312-.328-.538 2.16c-.286-.065-.567-.13-.84-.2l.002-.007-1.81-.452-.349 1.4s.974.223.954.237c.532.133.628.486.612.766l-.613 2.46c.037.009.084.023.137.044l-.14-.035-.86 3.45c-.065.162-.23.404-.6.312.013.02-.954-.238-.954-.238l-.652 1.503 1.71.426c.318.08.63.164.936.242l-.544 2.183 1.31.327.538-2.16c.36.098.708.188 1.05.273l-.537 2.15 1.313.328.544-2.182c2.24.424 3.924.253 4.632-1.772.57-1.63-.028-2.57-1.206-3.184.858-.198 1.504-.762 1.676-1.928zm-3.003 4.21c-.405 1.626-3.144.747-4.032.526l.72-2.885c.888.221 3.733.66 3.312 2.36zm.405-4.23c-.37 1.48-2.652.728-3.39.543l.653-2.616c.738.184 3.116.527 2.737 2.073z");
+    svg.appendChild(circle);
+    svg.appendChild(mark);
+    return svg;
+  }
+
+  function cryptoBadge(snippet) {
+    var badge = el("p", "crypto");
+    badge.appendChild(bitcoinIcon());
+    badge.appendChild(document.createTextNode("Accepts crypto"));
+    if (snippet) badge.title = snippet;
+    return badge;
+  }
+
   function strongestIndex(reasons) {
     var bestI = 0;
     var bestPts = reasonPoints(reasons[0]);
@@ -978,6 +1058,7 @@
 
     var body = el("div", "body");
     var row = el("div", "row");
+    var addrCol = el("div", "addr-col");
     var addrEl = el("p", "addr");
     var href = safeUrl(item.url);
     if (href) {
@@ -987,7 +1068,10 @@
     } else {
       addrEl.textContent = addr;
     }
-    row.appendChild(addrEl);
+    addrCol.appendChild(addrEl);
+    var cryptoSnippet = cryptoMatch(item);
+    if (cryptoSnippet) addrCol.appendChild(cryptoBadge(cryptoSnippet));
+    row.appendChild(addrCol);
     var pill = el("p", "pill");
     pill.appendChild(el("span", "pill-k", "Score"));
     pill.appendChild(el("span", "pill-n", scoreText(item.score)));

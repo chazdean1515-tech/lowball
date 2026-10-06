@@ -52,6 +52,12 @@ MOTIVATED_RE = re.compile(
     r")\b",
     re.I,
 )
+# Same words as the card badge in index.html. Word boundaries, so "btc"
+# inside another token does not count. Label only: not a score input.
+CRYPTO_RE = re.compile(
+    r"\b(?:crypto(?:s|currency|currencies)?|bitcoins?|btc|ethereums?|eth|usdc)\b",
+    re.I | re.ASCII,
+)
 PW_PYTHON = Path("/workspace/.venv-pw/bin/python")
 
 
@@ -74,6 +80,19 @@ def parse_price(text: str | None) -> int | None:
     if not m:
         return None
     return int(m.group(1).replace(",", ""))
+
+
+def crypto_snippet(text: str | None) -> str | None:
+    """Short quote when remarks say the seller accepts crypto. Not scored."""
+    if not text:
+        return None
+    match = CRYPTO_RE.search(text)
+    if not match:
+        return None
+    start = max(0, match.start() - 40)
+    end = min(len(text), match.end() + 40)
+    snippet = re.sub(r"\s+", " ", text[start:end]).strip()
+    return snippet[:180] or None
 
 
 def unescape_js(s: str) -> str:
@@ -448,6 +467,11 @@ def score_listing(listing: dict, page: dict) -> dict:
     listing.pop("verified_from", None)
     listing.pop("deepened", None)
     listing["fetched"] = today_iso()
+    mention = crypto_snippet(desc)
+    if mention:
+        listing["cryptoMention"] = mention
+    elif desc:
+        listing.pop("cryptoMention", None)
     return listing
 
 
