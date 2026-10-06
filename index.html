@@ -489,6 +489,140 @@
     font-size: 12px;
     line-height: 1.4;
   }
+  .newsletter {
+    margin: 0 0 12px;
+    scroll-margin-top: var(--header-offset);
+  }
+  .newsletter-card {
+    background: #000;
+    border: 1px solid #a6ff00;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(166, 255, 0, .28), 0 0 14px rgba(166, 255, 0, .12);
+    padding: 10px 12px 8px;
+  }
+  .newsletter-card h2 {
+    margin: 0 0 2px;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: #a6ff00;
+  }
+  .newsletter-lead {
+    margin: 0 0 8px;
+    color: #e4e4de;
+    font-size: 13px;
+    max-width: 68ch;
+  }
+  .newsletter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .newsletter-form[hidden] { display: none; }
+  .newsletter-form input[type="email"] {
+    flex: 1 1 220px;
+    min-width: 0;
+    max-width: 360px;
+    height: 40px;
+    border: 1px solid #c8c8c4;
+    border-radius: 4px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: #fff;
+  }
+  .newsletter-form input[type="email"]:focus {
+    outline: 2px solid var(--char);
+    border-color: var(--char);
+  }
+  .newsletter-submit {
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid #000;
+    border-radius: 4px;
+    background: #000;
+    color: #a6ff00;
+    font: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .newsletter-submit:hover { background: #1a1a1a; }
+  .newsletter-submit:focus-visible {
+    outline: 2px solid #a6ff00;
+    outline-offset: 2px;
+  }
+  .newsletter-embed {
+    position: relative;
+    width: min(100%, 400px);
+    height: 47px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #a6ff00;
+  }
+  .newsletter-embed[hidden] { display: none; }
+  .newsletter-frame {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 47px;
+    border: 0;
+  }
+  .newsletter-btn-face {
+    position: absolute;
+    z-index: 2;
+    top: 1px;
+    right: 1px;
+    width: 101px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    color: #a6ff00;
+    border-left: 1px solid #a6ff00;
+    font-family: "Source Sans 3", "Avenir Next", "Trebuchet MS", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    pointer-events: none;
+  }
+  .newsletter-btn-face[hidden] { display: none; }
+  .newsletter-fine,
+  .newsletter-status {
+    margin: 6px 0 0;
+    color: #c8c8c0;
+    font-size: 12px;
+    line-height: 1.4;
+    max-width: 68ch;
+  }
+  .newsletter-status { color: #a6ff00; }
+  .newsletter-status[hidden] { display: none; }
+  .newsletter-fine a {
+    color: #a6ff00;
+    text-decoration: underline;
+    text-decoration-color: rgba(166, 255, 0, .55);
+    text-underline-offset: 2px;
+  }
+  @media (min-width: 861px) {
+    .newsletter-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 400px;
+      column-gap: 18px;
+      row-gap: 2px;
+      align-items: center;
+    }
+    .newsletter-card h2 { grid-column: 1; grid-row: 1; }
+    .newsletter-lead { grid-column: 1; grid-row: 2; margin: 0; }
+    .newsletter-embed { grid-column: 2; grid-row: 1 / span 3; justify-self: end; }
+    .newsletter-fine { grid-column: 1; grid-row: 3; margin: 2px 0 0; }
+    .newsletter-status { grid-column: 1; grid-row: 4; }
+  }
   .rail {
     position: sticky;
     top: calc(var(--header-offset) + 8px);
@@ -696,6 +830,12 @@
     font-weight: 400;
   }
   .site-footer .disclosure { max-width: 72ch; }
+  .site-footer p a {
+    color: var(--char);
+    text-decoration: underline;
+    text-decoration-color: #bdbdb8;
+    text-underline-offset: 2px;
+  }
   @media (max-width: 860px) {
     :root { --header-offset: 144px; }
     .top-inner {
@@ -725,6 +865,10 @@
     .page { padding: 14px 12px 36px; }
     .move-cta { padding: 12px; }
     .move-cta-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .newsletter-card { padding: 10px 10px 8px; }
+    .newsletter-card h2 { font-size: 17px; }
+    .newsletter-form input[type="email"],
+    .newsletter-submit { flex: 1 1 100%; max-width: none; }
     .mapbox, .mapbox.leaflet-container { height: min(210px, 55vh); }
     .cities { max-height: 220px; }
   }
@@ -774,6 +918,26 @@
     <button type="button" id="city-filter-clear">Clear city filter</button>
   </p>
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
+  <!--
+    Free weekly newsletter. data-beehiiv-form is the Beehiiv subscribe-form ID.
+    With an ID set, the card loads Beehiiv's slim form
+    (subscribe-forms.beehiiv.com/v3/forms/{id}?layout=slim) and paints a
+    lime-on-black Subscribe face over their button. An empty value leaves
+    the fields on the page and does not submit.
+  -->
+  <section class="newsletter" id="newsletter" aria-labelledby="newsletter-heading">
+    <div class="newsletter-card">
+      <h2 id="newsletter-heading">Subscribe to the free weekly newsletter</h2>
+      <p class="newsletter-lead" id="newsletter-lead">A weekly note on motivated sellers in Florida, Texas, and Colorado.</p>
+      <form class="newsletter-form" id="newsletter-form" method="post" action="" data-beehiiv-form="0079b36c-f7e7-41b6-8a13-0c56628ca1f3" novalidate>
+        <label class="sr-only" for="newsletter-email">Email address</label>
+        <input id="newsletter-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="Email address" required>
+        <button class="newsletter-submit" type="submit">Subscribe</button>
+      </form>
+      <p class="newsletter-fine" id="newsletter-fine">It is free. Unsubscribe from any issue. <a href="privacy.html">Privacy</a>.</p>
+      <p class="newsletter-status" id="newsletter-status" role="status" hidden></p>
+    </div>
+  </section>
   <div class="layout" id="layout">
     <div class="board">
       <aside class="move-cta" aria-label="Moving quote">
@@ -828,15 +992,86 @@
 </main>
 <footer class="site-footer">
   <nav class="footer-nav" aria-label="About Lowball">
+    <a href="#newsletter">Newsletter</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
     <a href="privacy.html">Privacy</a>
     <a href="terms.html">Terms</a>
   </nav>
   <p class="disclosure">Lowball ranks publicly listed homes using published listing signals. We are not a real estate brokerage, lender, insurer, or moving company, and we don't give real estate, insurance, or legal advice. We may earn a commission when you request a quote or book through partner links. Listing data can be incomplete or outdated, so check everything yourself before acting.</p>
+  <p>The free weekly newsletter is optional. Unsubscribe details are on the <a href="privacy.html">Privacy</a> page.</p>
   <p>Lowball is not affiliated with Redfin, Zillow, or any MLS. The boards are not a live feed.</p>
   <p>Lowball™ and uselowball.com are trademarks of Charlie O'Brien.</p>
 </footer>
+<script>
+(function () {
+  var form = document.getElementById("newsletter-form");
+  if (!form) return;
+  var id = (form.getAttribute("data-beehiiv-form") || "").trim();
+  var lead = document.getElementById("newsletter-lead");
+  var fine = document.getElementById("newsletter-fine");
+  var status = document.getElementById("newsletter-status");
+  if (id) {
+    form.hidden = true;
+    var embed = document.createElement("div");
+    embed.className = "newsletter-embed";
+    var iframe = document.createElement("iframe");
+    iframe.className = "newsletter-frame";
+    iframe.title = "Subscribe to the free weekly newsletter";
+    iframe.setAttribute("scrolling", "no");
+    iframe.src = "https://subscribe-forms.beehiiv.com/v3/forms/" + encodeURIComponent(id) + "?layout=slim&referrer=" + encodeURIComponent(encodeURIComponent(location.href));
+    var face = document.createElement("span");
+    face.className = "newsletter-btn-face";
+    face.setAttribute("aria-hidden", "true");
+    face.textContent = "Subscribe";
+    embed.appendChild(iframe);
+    embed.appendChild(face);
+    form.insertAdjacentElement("afterend", embed);
+    iframe.addEventListener("load", function () {
+      try {
+        iframe.contentWindow.postMessage({ type: "beehiiv:parent-loaded", payload: { handlesRedirect: true } }, "*");
+      } catch (err) {}
+    });
+    window.addEventListener("message", function (event) {
+      if (event.origin !== "https://subscribe-forms.beehiiv.com") return;
+      var data = event.data || {};
+      if (data.type === "beehiiv:redirect" && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      if (data.type === "beehiiv:challenge" && data.payload && data.payload.height) {
+        face.hidden = true;
+        embed.style.height = data.payload.height;
+        iframe.style.height = data.payload.height;
+        return;
+      }
+      if (data.type === "beehiiv:submitted" || data.type === "beehiiv:success-toast") {
+        face.hidden = true;
+        embed.hidden = true;
+        if (status) {
+          status.hidden = false;
+          status.textContent = "Check your email to confirm your subscription.";
+        }
+      }
+    });
+    return;
+  }
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var input = document.getElementById("newsletter-email");
+    var email = input ? input.value.trim() : "";
+    if (!input || !email || !input.checkValidity()) {
+      if (status) {
+        status.hidden = false;
+        status.textContent = "Enter an email address to subscribe.";
+      }
+      if (input) input.focus();
+      return;
+    }
+    if (status) status.hidden = true;
+  });
+})();
+</script>
 <script>
 (function () {
   var list = document.getElementById("list");
