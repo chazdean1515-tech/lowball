@@ -865,19 +865,17 @@
   </p>
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
   <!--
-    Free weekly newsletter. Paste the Beehiiv subscribe-form ID into
-    data-beehiiv-form (on the form below) to make subscriptions live.
-    Beehiiv: Subscribers → Subscribe forms → Get embed code. Use an Inline
-    form. The ID is the data-beehiiv-form value on
-    https://subscribe-forms.beehiiv.com/v3/loader.js
-    Leave data-beehiiv-form empty until then. While it is empty this form
-    does not submit, and the address is not saved.
+    Free weekly newsletter. data-beehiiv-form is the Beehiiv subscribe-form ID.
+    With an ID set, this page loads
+    https://subscribe-forms.beehiiv.com/v3/loader.js and Beehiiv renders that
+    Inline form in this card. An empty value leaves the fields on the page
+    and does not submit.
   -->
   <section class="newsletter" id="newsletter" aria-labelledby="newsletter-heading">
     <div class="newsletter-card">
       <h2 id="newsletter-heading">Subscribe to the free weekly newsletter</h2>
       <p class="newsletter-lead" id="newsletter-lead">A weekly note on motivated sellers in Florida, Texas, and Colorado.</p>
-      <form class="newsletter-form" id="newsletter-form" method="post" action="" data-beehiiv-form="" novalidate>
+      <form class="newsletter-form" id="newsletter-form" method="post" action="" data-beehiiv-form="0079b36c-f7e7-41b6-8a13-0c56628ca1f3" novalidate>
         <label class="sr-only" for="newsletter-email">Email address</label>
         <input id="newsletter-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="Email address" required>
         <button class="newsletter-submit" type="submit">Subscribe</button>
