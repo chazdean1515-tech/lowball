@@ -27,7 +27,13 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 from urllib.parse import quote
 
-from listing_rules import clean_remark, is_rent_amount, parse_dates, prepare_board
+from listing_rules import (
+    clean_remark,
+    is_rent_amount,
+    parse_dates,
+    prepare_board,
+    relist_started_after_removal,
+)
 
 ROOT = Path(__file__).resolve().parent
 CO_PATH = ROOT / "colorado.json"
@@ -388,9 +394,14 @@ def score_listing(listing: dict, page: dict) -> dict:
             off_then_back = False
 
     if off_then_back:
-        points["offThenBack"] = 12
         rem_date = removals[0]["date"]
         # current listed is newest-first; take the chronological first Listed
+        cur = list(reversed(current_listed))[0]
+        if not relist_started_after_removal(str(rem_date or ""), str(cur.get("date") or "")):
+            off_then_back = False
+    if off_then_back:
+        points["offThenBack"] = 12
+        rem_date = removals[0]["date"]
         cur = list(reversed(current_listed))[0]
         prior_ask = prior_priced[0]["price"]  # newest prior ask
         reasons.append(

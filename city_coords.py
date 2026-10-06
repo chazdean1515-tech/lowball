@@ -155,12 +155,7 @@ def sync_board_cities(board: dict, kind: str, dry_run: bool = False) -> list[str
             continue
         state_coords[city] = [round(point[0], 6), round(point[1], 6)]
     current[kind] = state_coords
-    # Keep a short note so the file explains itself.
-    current["note"] = (
-        "Latitude, longitude for each city string on the boards. "
-        "Census Gazetteer internal points, plus geo/communities.json "
-        "for places that are not census places. No runtime geocoder."
-    )
+    current.pop("note", None)
     text = json.dumps(current, indent=2, ensure_ascii=False) + "\n"
     if CITIES_PATH.exists() and CITIES_PATH.read_text(encoding="utf-8") == text:
         for city in missing:

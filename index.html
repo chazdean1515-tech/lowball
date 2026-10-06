@@ -567,6 +567,29 @@
     background: #a6ff00;
     box-shadow: 0 0 0 2px var(--ink);
   }
+  .map-cluster-wrap { background: transparent; border: 0; }
+  .map-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--char);
+    color: #a6ff00;
+    border: 2px solid #a6ff00;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .map-cluster-wrap.is-on .map-cluster {
+    background: #a6ff00;
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  .mapbox.leaflet-container.is-coarse { touch-action: pan-y; }
+  .mapbox.leaflet-container.is-coarse.is-panning { touch-action: none; }
   .leaflet-tooltip {
     background: var(--ink);
     color: #f6f6f4;
@@ -769,8 +792,8 @@
     </div>
     <aside class="rail" id="map" aria-labelledby="map-heading">
       <h2 id="map-heading">Map</h2>
-      <p class="standin" id="map-caption">Florida cities on this board, sized by listing count. Dots are cities, not individual homes.</p>
-      <p class="sr-only" id="map-help">The map and the city list both filter the board. Clear the city filter with the button above the listings. Search, sort, and Show more keep the city filter.</p>
+      <p class="standin" id="map-caption">Florida cities on this board. Nearby cities stack into a numbered cluster until you zoom in. On a phone, use two fingers to move the map.</p>
+      <p class="sr-only" id="map-help">The map and the city list both filter the board. A numbered cluster is several nearby cities; zoom in to separate them. On a phone, drag with two fingers so the page can still scroll. Clear the city filter with the button above the listings. Search, sort, and Show more keep the city filter.</p>
       <div class="map-frame">
         <div class="mapbox" id="city-map" role="region" aria-label="Map of cities on this board"></div>
         <p class="map-fallback" id="map-fallback">City map loads when this section is on screen.</p>
@@ -780,9 +803,9 @@
       <div class="rules" id="score">
         <h2>How the score works</h2>
         <p class="source-note" id="source-fl">Florida rows were read from public Zillow pages, plus some earlier Redfin pages.</p>
-        <p class="source-note" id="source-tx" hidden>Texas rows were read from public Zillow pages. A few earlier Texas listings were read from Redfin.</p>
+        <p class="source-note" id="source-tx" hidden>Texas rows were read from public Zillow pages. A few earlier Texas listings were read from Redfin and have no fetch date, so they sort after dated rows.</p>
         <p class="source-note" id="source-co" hidden>Colorado rows were read from public Zillow price-reduced lists. Some were checked again on the Redfin listing page.</p>
-        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100. A rent amount in the price history is not a cut.</p>
+        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100. A rent amount in the price history is not a cut. Rows with no fetch date are earlier fetches. They stay on the board and sort after dated rows.</p>
         <ol>
           <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0. Rent amounts are left out.</li>
           <li>Number of cuts on this listing: 5 each, up to 15. Rent amounts are left out.</li>
@@ -792,7 +815,7 @@
             <span id="dom-co" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow. Listings checked on a Redfin page use the day count printed there.</span>
           </li>
           <li>Drop from the first ask on this listing: 1 point per percent, up to 10.</li>
-          <li>Off market, then back, or expired and relisted: 12, when that removal or relist is dated within the 12 months before the board date. Older history is ignored.</li>
+          <li>Off market, then back, or expired and relisted: 12, when that removal is dated within the 12 months before the board date and the new listing started after the prior listing ended. If the two listings overlapped, the relist is not counted. Older history is ignored.</li>
           <li>Relisted under the prior ask: 8 more, for a return inside that same 12-month window. A rent amount does not count.</li>
           <li>Pending or contingent, then back on the market: 12, when that pending or contingent date is within the 12 months before the board date. More than once is mentioned, not extra points.</li>
           <li>Under the tax assessment or under the last sale: 6.</li>
@@ -1209,20 +1232,136 @@
   }
 
   function loadLeaflet() {
-    if (window.L) return Promise.resolve();
+    if (window.L && window.L.markerClusterGroup) return Promise.resolve();
     if (leafletPromise) return leafletPromise;
     leafletPromise = new Promise(function (resolve, reject) {
       var css = document.createElement("link");
       css.rel = "stylesheet";
       css.href = "vendor/leaflet/leaflet.css";
       document.head.appendChild(css);
+      var clusterCss = document.createElement("link");
+      clusterCss.rel = "stylesheet";
+      clusterCss.href = "vendor/leaflet/MarkerCluster.css";
+      document.head.appendChild(clusterCss);
       var script = document.createElement("script");
       script.src = "vendor/leaflet/leaflet.js";
-      script.onload = function () { resolve(); };
+      script.onload = function () {
+        var cluster = document.createElement("script");
+        cluster.src = "vendor/leaflet/leaflet.markercluster.js";
+        cluster.onload = function () { resolve(); };
+        cluster.onerror = function () { reject(new Error("map clusters failed")); };
+        document.body.appendChild(cluster);
+      };
       script.onerror = function () { reject(new Error("map library failed")); };
       document.body.appendChild(script);
     });
     return leafletPromise;
+  }
+
+  function coarsePointer() {
+    return window.matchMedia("(pointer: coarse)").matches;
+  }
+
+  function dotPx(count, maxCount) {
+    var min = 24;
+    var max = 36;
+    if (!maxCount || maxCount <= 1 || count <= 1) return min;
+    var t = Math.log(count) / Math.log(maxCount);
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    return Math.round(min + (max - min) * t);
+  }
+
+  function clusterIcon(cluster) {
+    var n = cluster.getChildCount();
+    var on = false;
+    if (cityFilter) {
+      var kids = cluster.getAllChildMarkers();
+      for (var i = 0; i < kids.length; i++) {
+        if (kids[i].options.cityKey === cityFilter) {
+          on = true;
+          break;
+        }
+      }
+    }
+    return L.divIcon({
+      className: "map-cluster-wrap" + (on ? " is-on" : ""),
+      html: '<span class="map-cluster">' + n + "</span>",
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
+    });
+  }
+
+  function labelClusters() {
+    if (!cityMapEl) return;
+    var icons = cityMapEl.querySelectorAll(".map-cluster-wrap");
+    for (var i = 0; i < icons.length; i++) {
+      var countEl = icons[i].querySelector(".map-cluster");
+      var count = countEl ? countEl.textContent : "";
+      icons[i].setAttribute("role", "button");
+      icons[i].setAttribute("aria-label", count + " nearby cities. Zoom in to separate them.");
+    }
+  }
+
+  function fitState(points) {
+    if (!cityMap) return;
+    var run = function () {
+      if (!cityMap) return;
+      cityMap.invalidateSize({ animate: false });
+      if (!points.length) {
+        cityMap.setView(centers[state] || [39, -98], 6, { animate: false });
+        return;
+      }
+      cityMap.fitBounds(points, { padding: [12, 12], animate: false });
+    };
+    run();
+    requestAnimationFrame(function () {
+      run();
+      labelClusters();
+    });
+  }
+
+  function touchPoint(touches) {
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2
+    };
+  }
+
+  function bindTwoFingerPan() {
+    if (!cityMapEl || cityMapEl.dataset.panBound) return;
+    cityMapEl.dataset.panBound = "1";
+    var coarse = window.matchMedia("(pointer: coarse)");
+    var last = null;
+    if (coarse.matches) {
+      cityMapEl.classList.add("is-coarse");
+      if (cityMap.dragging) cityMap.dragging.disable();
+    }
+    cityMapEl.addEventListener("touchstart", function (event) {
+      if (!cityMap || !coarse.matches || !event.touches || event.touches.length < 2) return;
+      cityMapEl.classList.add("is-panning");
+      last = touchPoint(event.touches);
+    }, { capture: true, passive: true });
+    cityMapEl.addEventListener("touchmove", function (event) {
+      if (!cityMap || !last || !event.touches || event.touches.length < 2) return;
+      var now = touchPoint(event.touches);
+      cityMap.panBy([last.x - now.x, last.y - now.y], { animate: false });
+      last = now;
+      event.preventDefault();
+    }, { capture: true, passive: false });
+    function endGesture(event) {
+      if (!event.touches || event.touches.length < 2) {
+        cityMapEl.classList.remove("is-panning");
+        last = null;
+      }
+    }
+    cityMapEl.addEventListener("touchend", endGesture, { capture: true, passive: true });
+    cityMapEl.addEventListener("touchcancel", endGesture, { capture: true, passive: true });
+    coarse.addEventListener("change", function () {
+      if (!cityMap || !cityMap.dragging) return;
+      if (coarse.matches) cityMap.dragging.disable();
+      else cityMap.dragging.enable();
+    });
   }
 
   function drawMarkers(refit) {
@@ -1230,11 +1369,19 @@
     cityLayer.clearLayers();
     var board = boards[state];
     var groups = board ? cityGroups(board.listings || []) : [];
-    var bounds = [];
+    var placed = [];
     groups.forEach(function (group) {
+      if (coordFor(group)) placed.push(group);
+    });
+    var maxCount = 1;
+    placed.forEach(function (group) {
+      if (group.count > maxCount) maxCount = group.count;
+    });
+    var bounds = [];
+    var touch = coarsePointer();
+    placed.forEach(function (group) {
       var point = coordFor(group);
-      if (!point) return;
-      var d = Math.round(Math.min(28, 8 + Math.sqrt(group.count) * 1.35));
+      var d = dotPx(group.count, maxCount);
       var on = group.key === cityFilter;
       var noun = group.count === 1 ? "listing" : "listings";
       var label = group.label + ", " + group.count + " " + noun + (on ? ". Filtering the board. Activate to clear." : ". Filter the board to this city.");
@@ -1247,12 +1394,19 @@
       var marker = L.marker(point, {
         icon: icon,
         keyboard: true,
+        cityKey: group.key,
         title: group.label + " · " + group.count + " " + noun,
         alt: label,
-        riseOnHover: true
+        riseOnHover: !touch
       });
-      marker.bindTooltip(group.label + " · " + group.count + " " + noun, { direction: "top", opacity: 1 });
-      marker.on("click", function () { toggleCity(group.key); });
+      if (!touch) {
+        marker.bindTooltip(group.label + " · " + group.count + " " + noun, { direction: "top", opacity: 1 });
+      }
+      marker.on("click", function () {
+        marker.closeTooltip();
+        if (cityMap) cityMap.closePopup();
+        toggleCity(group.key);
+      });
       marker.on("add", function () {
         var elIcon = marker.getElement();
         if (!elIcon) return;
@@ -1266,27 +1420,29 @@
             toggleCity(group.key);
           }
         });
-        elIcon.addEventListener("focus", function () { marker.openTooltip(); });
-        elIcon.addEventListener("blur", function () { marker.closeTooltip(); });
+        if (!touch) {
+          elIcon.addEventListener("focus", function () { marker.openTooltip(); });
+          elIcon.addEventListener("blur", function () { marker.closeTooltip(); });
+        }
       });
       marker.addTo(cityLayer);
       bounds.push(point);
     });
     if (refit || mapFitted !== state) {
-      if (bounds.length) {
-        cityMap.fitBounds(bounds, { padding: [18, 18], maxZoom: 8, animate: !prefersReduced() });
-      } else {
-        cityMap.setView(centers[state], 6, { animate: false });
-      }
+      fitState(bounds);
       mapFitted = state;
     }
-    cityMap.invalidateSize();
+    requestAnimationFrame(labelClusters);
   }
 
   function initMap() {
-    if (cityMap || !window.L || !cityMapEl) return;
+    if (cityMap || !window.L || !window.L.markerClusterGroup || !cityMapEl) return;
+    var touch = coarsePointer();
     cityMap = L.map(cityMapEl, {
       scrollWheelZoom: false,
+      dragging: !touch,
+      zoomSnap: 0,
+      zoomDelta: 1,
       minZoom: 4,
       maxZoom: 12,
       zoomControl: true,
@@ -1299,7 +1455,30 @@
       updateWhenIdle: true,
       keepBuffer: 2
     }).addTo(cityMap);
-    cityLayer = L.layerGroup().addTo(cityMap);
+    cityLayer = L.markerClusterGroup({
+      maxClusterRadius: function () {
+        // Clusters are laid out on whole zoom levels. The fitted view can sit
+        // half a level lower, which pulls the icons closer. A wider radius
+        // keeps those icons from landing on top of each other.
+        return 96;
+      },
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      showCoverageOnHover: false,
+      animate: !prefersReduced(),
+      animateAddingMarkers: false,
+      iconCreateFunction: clusterIcon,
+      spiderLegPolylineOptions: { weight: 1.5, color: "#1a1a1a", opacity: 0.45 }
+    });
+    cityMap.addLayer(cityLayer);
+    cityLayer.on("animationend", labelClusters);
+    cityMap.on("zoomend", labelClusters);
+    cityMap.on("click", function () {
+      cityMap.eachLayer(function (layer) {
+        if (layer.closeTooltip) layer.closeTooltip();
+      });
+    });
+    bindTwoFingerPan();
     cityMap.setView(centers[state] || [39, -98], 6);
     var fallback = document.getElementById("map-fallback");
     if (fallback) fallback.hidden = true;
@@ -1334,18 +1513,20 @@
         if (mapObserver) mapObserver.disconnect();
         mapObserver = null;
       });
-    }, { rootMargin: "200px 0px" });
+    }, { rootMargin: "0px", threshold: 0.4 });
     mapObserver.observe(cityMapEl);
   }
 
   function setCityFilter(key) {
     var fromList = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("city-btn");
+    var clearing = !key && document.activeElement === cityFilterClear;
     cityFilter = key || "";
     shown = PAGE;
     if (!boards[state]) return;
     fillCities(boards[state].listings || []);
     apply();
-    if (!fromList && cityFilter) cityFilterClear.focus();
+    if (clearing) q.focus();
+    else if (!fromList && cityFilter) cityFilterClear.focus();
     if (cityFilter && window.matchMedia("(max-width: 860px)").matches) {
       var head = document.querySelector(".results-head");
       if (head) head.scrollIntoView({ behavior: prefersReduced() ? "auto" : "smooth", block: "start" });
@@ -1361,7 +1542,7 @@
     var label = stateLabel[kind];
     place.textContent = label;
     logoState.textContent = label;
-    mapCaption.textContent = label + " cities on this board, sized by listing count. Dots are cities, not individual homes.";
+    mapCaption.textContent = label + " cities on this board. Nearby cities stack into a numbered cluster until you zoom in. On a phone, use two fingers to move the map.";
     ["fl", "tx", "co"].forEach(function (key) {
       var source = document.getElementById("source-" + key);
       var dom = document.getElementById("dom-" + key);
@@ -1424,6 +1605,8 @@
     var key = sort.value;
     var kind = state;
     items.sort(function (a, b) {
+      var dated = (a.fetched ? 0 : 1) - (b.fetched ? 0 : 1);
+      if (dated) return dated;
       if (key === "cut") return cutValue(kind, b) - cutValue(kind, a) || Number(b.score) - Number(a.score);
       if (key === "dom") return domValue(b) - domValue(a) || Number(b.score) - Number(a.score);
       return Number(b.score) - Number(a.score) || cutValue(kind, b) - cutValue(kind, a);
