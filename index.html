@@ -14,15 +14,15 @@
 <meta property="og:site_name" content="Lowball">
 <meta property="og:title" content="Lowball — Motivated home sellers">
 <meta property="og:description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed.">
-<meta property="og:image" content="https://uselowball.com/og.jpg">
-<meta property="og:image:alt" content="Lowball wordmark. Motivated home sellers, ranked by price cuts, relists, and failed contracts.">
+<meta property="og:image" content="https://uselowball.com/og.jpg?v=3">
+<meta property="og:image:alt" content="Lowball. Find the most motivated sellers.">
 <meta property="og:url" content="https://uselowball.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Lowball — Motivated home sellers">
 <meta name="twitter:description" content="Lowball ranks motivated home sellers in Florida, Texas, and Colorado by price cuts, relists, and failed contracts. Not a live feed.">
-<meta name="twitter:image" content="https://uselowball.com/og.jpg">
-<meta name="twitter:image:alt" content="Lowball wordmark. Motivated home sellers, ranked by price cuts, relists, and failed contracts.">
+<meta name="twitter:image" content="https://uselowball.com/og.jpg?v=3">
+<meta name="twitter:image:alt" content="Lowball. Find the most motivated sellers.">
 <style>
   @font-face {
     font-family: "Source Serif 4";
@@ -60,6 +60,16 @@
   }
   a { color: var(--ink); text-decoration: none; }
   a:hover { color: #000; }
+  .brand {
+    background: #000;
+    line-height: 0;
+  }
+  .brand img {
+    display: block;
+    width: min(100%, 960px);
+    height: auto;
+    margin: 0 auto;
+  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -206,7 +216,9 @@
     letter-spacing: -0.03em;
     font-weight: 650;
   }
-  .count { color: var(--muted); font-family: "Source Sans 3", "Avenir Next", sans-serif; font-weight: 500; font-size: 16px; }
+  .title-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .title-line h1 { margin: 0; }
+  .count { margin: 0; color: var(--muted); font-family: "Source Sans 3", "Avenir Next", sans-serif; font-weight: 500; font-size: 16px; white-space: nowrap; }
   .sort {
     display: flex;
     align-items: center;
@@ -230,6 +242,26 @@
     font-size: 14px;
   }
   .disclaimer { margin-bottom: 16px; }
+  .city-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin: -4px 0 12px;
+    font-size: 14px;
+  }
+  .city-filter[hidden] { display: none; }
+  .city-filter button {
+    font: inherit;
+    font-weight: 700;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid #c8c8c4;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .city-filter button:hover { background: #f4f4f1; }
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -310,7 +342,7 @@
   }
   .pill-k {
     font-weight: 650;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #3c3c3c;
@@ -407,11 +439,56 @@
     border-radius: 4px;
   }
   .more:hover { background: #f4f4f1; }
-  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible {
+  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible, .move-quote:focus-visible, .city-btn:focus-visible, .city-filter button:focus-visible {
     outline: 2px solid var(--char);
     outline-offset: 2px;
   }
   .more[hidden] { display: none; }
+  .move-cta {
+    background: #f4f4f1;
+    border: 1px solid #d5d5d1;
+    border-radius: 2px;
+    padding: 12px 14px;
+    margin: 0 0 10px;
+  }
+  .move-cta h2 {
+    margin: 0 0 4px;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: var(--char);
+  }
+  .move-cta p {
+    margin: 0;
+    color: var(--char);
+    font-size: 15px;
+  }
+  .move-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+    margin-top: 10px;
+  }
+  .move-quote {
+    display: inline-block;
+    padding: 7px 12px;
+    background: #fff;
+    color: var(--char);
+    border: 1px solid #c8c8c4;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+  .move-quote:hover { background: #e6e6e3; color: var(--ink); }
+  .move-note {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
   .rail {
     position: sticky;
     top: calc(var(--header-offset) + 8px);
@@ -434,13 +511,84 @@
     color: var(--muted);
     font-size: 13px;
   }
+  .map-frame { position: relative; margin-bottom: 8px; }
   .mapbox {
-    background: #f6f6f4;
+    height: 250px;
+    background: #e4e2dc;
     border-radius: 2px;
-    padding: 8px;
-    margin-bottom: 12px;
+    overflow: hidden;
   }
-  .mapbox svg { width: 100%; height: auto; display: block; }
+  .mapbox.leaflet-container {
+    height: 250px;
+    width: 100%;
+    background: #e4e2dc;
+    font-family: "Source Sans 3", "Avenir Next", sans-serif;
+    font-size: 12px;
+  }
+  .map-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .map-fallback[hidden] { display: none; }
+  .leaflet-tile-pane {
+    filter: grayscale(1) sepia(0.28) contrast(0.9) brightness(1.06);
+  }
+  .leaflet-control-attribution {
+    font-size: 10px;
+    line-height: 1.3;
+    background: rgba(246, 246, 244, 0.92);
+    color: var(--char);
+    max-width: 78%;
+  }
+  .leaflet-control-attribution a { color: var(--char); }
+  .leaflet-control-zoom a {
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+  }
+  .map-dot-wrap { background: transparent; border: 0; }
+  .map-dot {
+    display: block;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--char);
+    box-shadow: 0 0 0 2px #a6ff00;
+  }
+  .map-dot.is-on {
+    background: #a6ff00;
+    box-shadow: 0 0 0 2px var(--ink);
+  }
+  .leaflet-tooltip {
+    background: var(--ink);
+    color: #f6f6f4;
+    border: 0;
+    border-radius: 2px;
+    box-shadow: none;
+    font-family: "Source Sans 3", "Avenir Next", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 8px;
+  }
+  .leaflet-tooltip-top:before { border-top-color: var(--ink); }
+  .leaflet-tooltip-bottom:before { border-bottom-color: var(--ink); }
+  .leaflet-tooltip-left:before { border-left-color: var(--ink); }
+  .leaflet-tooltip-right:before { border-right-color: var(--ink); }
+  .cities-label {
+    margin: 8px 0 0;
+    font-family: "Source Sans 3", "Avenir Next", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
   .cities {
     list-style: none;
     margin: 0;
@@ -448,14 +596,28 @@
     max-height: 280px;
     overflow: auto;
   }
-  .cities li {
+  .cities li { margin: 0; padding: 0; }
+  .city-btn {
     display: grid;
     grid-template-columns: 14px 1fr auto;
     gap: 8px;
     align-items: center;
-    padding: 6px 0;
+    width: 100%;
+    margin: 0;
+    padding: 6px 4px;
+    border: 0;
     border-top: 1px solid #ecece9;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .city-btn:hover { background: #f7f7f4; }
+  .city-btn[aria-pressed="true"] {
+    background: #f3f3f0;
+    box-shadow: inset 3px 0 0 #a6ff00;
   }
   .dot {
     width: 8px;
@@ -475,8 +637,13 @@
   .rules .source-note { color: var(--ink); }
   .rules ol { margin: 8px 0 0; padding-left: 18px; }
   .rules li { margin: 0 0 4px; }
+  .board { position: relative; min-height: 100vh; }
   .empty {
     display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 2px;
@@ -507,6 +674,7 @@
     font-size: 12px;
     font-weight: 400;
   }
+  .site-footer .disclosure { max-width: 72ch; }
   @media (max-width: 860px) {
     :root { --header-offset: 144px; }
     .top-inner {
@@ -516,7 +684,9 @@
     }
     .logo { font-size: 22px; }
     .search { height: 36px; }
+    .search { grid-column: 1 / -1; }
     .nav-row { grid-column: 1 / -1; justify-content: flex-start; }
+    .layout:not(.is-ready) .rail { display: none; }
     nav a, .state-btn { padding: 5px 8px; font-size: 14px; }
     .layout { grid-template-columns: 1fr; }
     .rail { position: static; max-height: none; overflow: visible; }
@@ -532,10 +702,17 @@
     .price { font-size: 22px; }
     .addr { font-size: 15px; }
     .page { padding: 14px 12px 36px; }
+    .move-cta { padding: 12px; }
+    .move-cta-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .mapbox, .mapbox.leaflet-container { height: 210px; }
+    .cities { max-height: 220px; }
   }
 </style>
 </head>
 <body>
+<div class="brand">
+  <img src="og.jpg?v=3" width="1200" height="630" alt="Lowball. Find the most motivated sellers.">
+</div>
 <header class="top">
   <div class="top-inner">
     <p class="logo"><img class="mark" src="favicon.svg" width="28" height="28" alt="" aria-hidden="true">Lowball <span id="logo-state">Florida</span></p>
@@ -558,7 +735,10 @@
 </header>
 <main class="page">
   <div class="results-head">
-    <h1>Motivated sellers in <span id="place">Florida</span> <span class="count" id="count"></span></h1>
+    <div class="title-line">
+      <h1>Motivated sellers in <span id="place">Florida</span></h1>
+      <p class="count" id="count"></p>
+    </div>
     <label class="sort">Sort
       <select id="sort">
         <option value="score" selected>Lowball score</option>
@@ -568,65 +748,53 @@
     </label>
   </div>
   <p class="showing" id="showing" aria-live="polite"></p>
+  <p class="city-filter" id="city-filter" hidden>
+    <span id="city-filter-text"></span>
+    <button type="button" id="city-filter-clear">Clear city filter</button>
+  </p>
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
-  <div class="layout">
+  <div class="layout" id="layout">
     <div class="board">
+      <aside class="move-cta" aria-label="Moving quote">
+        <h2>Planning a move?</h2>
+        <p>Get a free moving quote from ScanToMove. Use code G5BN0WRA for 3% off.</p>
+        <p class="move-cta-row">
+          <a class="move-quote" href="https://scantomove.com/auth?ref=G5BN0WRA" target="_blank" rel="sponsored noopener">Get a free quote</a>
+          <span class="move-note">Affiliate link. Lowball may earn a commission if you book a move. No extra cost to you.</span>
+        </p>
+      </aside>
       <section id="list" aria-label="Listings"></section>
       <p class="empty" id="empty">Loading Florida listings.</p>
       <button type="button" class="more" id="more" hidden>Show more listings</button>
     </div>
     <aside class="rail" id="map" aria-labelledby="map-heading">
       <h2 id="map-heading">Map</h2>
-      <p class="standin" id="map-caption">Cities on this board. The shape is a simple outline of the state, not a live map.</p>
-      <div class="mapbox" id="map-fl">
-        <svg viewBox="0 0 220 280" role="img" aria-label="Simple outline of Florida">
-          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M14 86 L52 74 L86 78 L104 96 L116 122 L128 156 L136 188 L130 214 L146 236 L158 258 L146 266 L126 246 L116 222 L108 196 L100 168 L90 140 L76 114 L58 98 L30 96 Z"/>
-          <circle cx="40" cy="84" r="3.5" fill="#3c3c3c"/>
-          <circle cx="118" cy="108" r="3.5" fill="#3c3c3c"/>
-          <circle cx="108" cy="150" r="3.5" fill="#3c3c3c"/>
-          <circle cx="124" cy="188" r="3.5" fill="#3c3c3c"/>
-          <circle cx="136" cy="230" r="3.5" fill="#3c3c3c"/>
-        </svg>
+      <p class="standin" id="map-caption">Florida cities on this board, sized by listing count. Dots are cities, not individual homes.</p>
+      <p class="sr-only" id="map-help">The map and the city list both filter the board. Clear the city filter with the button above the listings. Search, sort, and Show more keep the city filter.</p>
+      <div class="map-frame">
+        <div class="mapbox" id="city-map" role="region" aria-label="Map of cities on this board"></div>
+        <p class="map-fallback" id="map-fallback">City map loads when this section is on screen.</p>
       </div>
-      <div class="mapbox" id="map-tx" hidden>
-        <svg viewBox="0 0 260 240" role="img" aria-label="Simple outline of Texas">
-          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M10 36 L128 32 L130 70 L176 86 L214 98 L236 128 L220 162 L186 184 L150 208 L112 214 L74 196 L46 160 L28 118 L16 72 Z"/>
-          <circle cx="70" cy="48" r="3.5" fill="#3c3c3c"/>
-          <circle cx="150" cy="120" r="3.5" fill="#3c3c3c"/>
-          <circle cx="168" cy="150" r="3.5" fill="#3c3c3c"/>
-          <circle cx="100" cy="170" r="3.5" fill="#3c3c3c"/>
-          <circle cx="60" cy="130" r="3.5" fill="#3c3c3c"/>
-        </svg>
-      </div>
-      <div class="mapbox" id="map-co" hidden>
-        <svg viewBox="0 0 260 180" role="img" aria-label="Simple outline of Colorado">
-          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M18 28 L242 28 L242 152 L18 152 Z"/>
-          <circle cx="150" cy="78" r="3.5" fill="#3c3c3c"/>
-          <circle cx="168" cy="70" r="3.5" fill="#3c3c3c"/>
-          <circle cx="155" cy="118" r="3.5" fill="#3c3c3c"/>
-          <circle cx="140" cy="48" r="3.5" fill="#3c3c3c"/>
-          <circle cx="70" cy="90" r="3.5" fill="#3c3c3c"/>
-        </svg>
-      </div>
-      <ul class="cities" id="cities"></ul>
+      <h3 class="cities-label" id="cities-label">Cities</h3>
+      <ul class="cities" id="cities" aria-labelledby="cities-label"></ul>
       <div class="rules" id="score">
         <h2>How the score works</h2>
         <p class="source-note" id="source-fl">Florida rows were read from public Zillow pages, plus some earlier Redfin pages.</p>
         <p class="source-note" id="source-tx" hidden>Texas rows were read from public Zillow pages. A few earlier Texas listings were read from Redfin.</p>
         <p class="source-note" id="source-co" hidden>Colorado rows were read from public Zillow price-reduced lists. Some were checked again on the Redfin listing page.</p>
-        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100.</p>
+        <p>Each card shows only categories the source actually printed. Nothing is guessed. The total stops at 100. A rent amount in the price history is not a cut.</p>
         <ol>
-          <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0.</li>
-          <li>Number of cuts on this listing: 5 each, up to 15.</li>
+          <li>Latest price cut: percent times 2.3, up to 25. A 10% cut is 23. About 10.9% or more is 25. No cut is 0. Rent amounts are left out.</li>
+          <li>Number of cuts on this listing: 5 each, up to 15. Rent amounts are left out.</li>
           <li>Days on market: days divided by 12, up to 10. About 120 days or more is 10.
             <span id="dom-fl">Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow or days on Redfin, whichever that page printed.</span>
             <span id="dom-tx" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow, because these rows were read from Zillow. The earlier Redfin listings use days on Redfin.</span>
             <span id="dom-co" hidden>Uses the printed days-on-market figure when the page has one. Otherwise uses days on Zillow. Listings checked on a Redfin page use the day count printed there.</span>
           </li>
           <li>Drop from the first ask on this listing: 1 point per percent, up to 10.</li>
-          <li>Off market, then back, or expired and relisted: 12.</li>
-          <li>Relisted under the prior ask: 8 more.</li>
-          <li>Pending or contingent, then back on the market: 12. More than once is mentioned, not extra points.</li>
+          <li>Off market, then back, or expired and relisted: 12, when that removal or relist is dated within the 12 months before the board date. Older history is ignored.</li>
+          <li>Relisted under the prior ask: 8 more, for a return inside that same 12-month window. A rent amount does not count.</li>
+          <li>Pending or contingent, then back on the market: 12, when that pending or contingent date is within the 12 months before the board date. More than once is mentioned, not extra points.</li>
           <li>Under the tax assessment or under the last sale: 6.</li>
           <li>Vacant, moved, tenant, estate, divorce, relocation, or seller-financing language: 4.</li>
           <li>Remarks say motivated, bring offers, price improved, or similar: 4.</li>
@@ -644,6 +812,7 @@
     <a href="privacy.html">Privacy</a>
     <a href="terms.html">Terms</a>
   </nav>
+  <p class="disclosure">Lowball ranks publicly listed homes using published listing signals. We are not a real estate brokerage, lender, insurer, or moving company, and we don't give real estate, insurance, or legal advice. We may earn a commission when you request a quote or book through partner links. Listing data can be incomplete or outdated, so check everything yourself before acting.</p>
   <p>Lowball is not affiliated with Redfin, Zillow, or any MLS. The boards are not a live feed.</p>
   <p>Lowball™ and uselowball.com are trademarks of Charlie O'Brien.</p>
 </footer>
@@ -660,9 +829,10 @@
   var logoState = document.getElementById("logo-state");
   var citiesEl = document.getElementById("cities");
   var mapCaption = document.getElementById("map-caption");
-  var mapFl = document.getElementById("map-fl");
-  var mapTx = document.getElementById("map-tx");
-  var mapCo = document.getElementById("map-co");
+  var cityMapEl = document.getElementById("city-map");
+  var cityFilterEl = document.getElementById("city-filter");
+  var cityFilterText = document.getElementById("city-filter-text");
+  var cityFilterClear = document.getElementById("city-filter-clear");
   var btnFl = document.getElementById("show-fl");
   var btnTx = document.getElementById("show-tx");
   var btnCo = document.getElementById("show-co");
@@ -674,6 +844,15 @@
   var loading = { fl: false, tx: false, co: false };
   var inflight = {};
   var state = "fl";
+  var cityFilter = "";
+  var cityCoords = null;
+  var coordsPromise = null;
+  var leafletPromise = null;
+  var cityMap = null;
+  var cityLayer = null;
+  var mapFitted = "";
+  var mapObserver = null;
+  var centers = { fl: [27.8, -81.7], tx: [31.2, -99.2], co: [39.0, -105.5] };
   var stateLabel = { fl: "Florida", tx: "Texas", co: "Colorado" };
   var stateAbbr = { fl: "FL", tx: "TX", co: "CO" };
   var stateSlug = { fl: "florida", tx: "texas", co: "colorado" };
@@ -874,6 +1053,7 @@
     card.appendChild(rank);
 
     var ph = el("div", "ph", "No photo available");
+    ph.setAttribute("aria-hidden", "true");
     card.appendChild(ph);
 
     var body = el("div", "body");
@@ -900,9 +1080,12 @@
     body.appendChild(row);
 
     if (item.price != null && item.price !== "") body.appendChild(el("div", "price", money(item.price)));
-    var fetchedIso = item.fetched || (board && board.fetched);
-    var fetchedLabel = formatFetched(fetchedIso);
-    if (fetchedLabel) body.appendChild(el("p", "fetched", "As of " + fetchedLabel));
+    if (item.fetched) {
+      var fetchedLabel = formatFetched(item.fetched);
+      if (fetchedLabel) body.appendChild(el("p", "fetched", "As of " + fetchedLabel));
+    } else {
+      body.appendChild(el("p", "fetched", "Earlier fetch"));
+    }
 
     var reasons = Array.isArray(item.reasons) ? item.reasons : [];
     var bestI = reasons.length ? strongestIndex(reasons) : -1;
@@ -937,15 +1120,248 @@
     return card;
   }
 
+  function cityKey(value) {
+    var text = String(value || "").toLowerCase().replace(/\./g, "").replace(/'/g, " ");
+    text = text.replace(/\bsaint\b/g, "st").replace(/\bfort\b/g, "ft").replace(/\bmount\b/g, "mt");
+    text = text.replace(/^pt\s+/, "port ").replace(/\s+pt$/, " point");
+    text = text.replace(/crossroads/g, "cross roads").replace(/\bmc\s+/g, "mc");
+    return text.replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function preferLabel(current, raw, variants) {
+    if ((variants[raw] || 0) > (variants[current] || 0)) return raw;
+    if ((variants[raw] || 0) < (variants[current] || 0)) return current;
+    var rawCap = raw.charAt(0) === raw.charAt(0).toUpperCase();
+    var curCap = current.charAt(0) === current.charAt(0).toUpperCase();
+    if (rawCap !== curCap) return rawCap ? raw : current;
+    return raw.localeCompare(current) < 0 ? raw : current;
+  }
+
+  function cityGroups(items) {
+    var grouped = {};
+    items.forEach(function (item) {
+      var raw = String(item.city || "").trim() || "Unknown city";
+      var key = cityKey(raw);
+      if (!grouped[key]) grouped[key] = { key: key, label: raw, count: 0, variants: {} };
+      var group = grouped[key];
+      group.count += 1;
+      group.variants[raw] = (group.variants[raw] || 0) + 1;
+      group.label = preferLabel(group.label, raw, group.variants);
+    });
+    return Object.keys(grouped).map(function (key) { return grouped[key]; }).sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
+  }
+
+  function coordFor(group) {
+    var table = cityCoords && cityCoords[state];
+    if (!table) return null;
+    var names = Object.keys(group.variants);
+    for (var i = 0; i < names.length; i++) {
+      var point = table[names[i]];
+      if (point && point.length === 2) return [Number(point[0]), Number(point[1])];
+    }
+    return null;
+  }
+
+  function activeGroup(items) {
+    if (!cityFilter) return null;
+    var groups = cityGroups(items || []);
+    for (var i = 0; i < groups.length; i++) {
+      if (groups[i].key === cityFilter) return groups[i];
+    }
+    return null;
+  }
+
+  function prefersReduced() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function paintFilter(items) {
+    var group = activeGroup(items);
+    if (!group) {
+      cityFilterEl.hidden = true;
+      cityFilterText.textContent = "";
+      return;
+    }
+    cityFilterEl.hidden = false;
+    cityFilterText.textContent = "City: " + group.label;
+  }
+
+  function hideFilter() {
+    cityFilterEl.hidden = true;
+  }
+
+  function loadCoords() {
+    if (cityCoords) return Promise.resolve(cityCoords);
+    if (coordsPromise) return coordsPromise;
+    coordsPromise = fetch("cities.json").then(function (res) {
+      if (!res.ok) throw new Error("cities.json returned " + res.status);
+      return res.json();
+    }).then(function (data) {
+      cityCoords = data || {};
+      return cityCoords;
+    }).catch(function () {
+      cityCoords = cityCoords || {};
+      return cityCoords;
+    });
+    return coordsPromise;
+  }
+
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (leafletPromise) return leafletPromise;
+    leafletPromise = new Promise(function (resolve, reject) {
+      var css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "vendor/leaflet/leaflet.css";
+      document.head.appendChild(css);
+      var script = document.createElement("script");
+      script.src = "vendor/leaflet/leaflet.js";
+      script.onload = function () { resolve(); };
+      script.onerror = function () { reject(new Error("map library failed")); };
+      document.body.appendChild(script);
+    });
+    return leafletPromise;
+  }
+
+  function drawMarkers(refit) {
+    if (!cityMap || !cityLayer || !window.L) return;
+    cityLayer.clearLayers();
+    var board = boards[state];
+    var groups = board ? cityGroups(board.listings || []) : [];
+    var bounds = [];
+    groups.forEach(function (group) {
+      var point = coordFor(group);
+      if (!point) return;
+      var d = Math.round(Math.min(28, 8 + Math.sqrt(group.count) * 1.35));
+      var on = group.key === cityFilter;
+      var noun = group.count === 1 ? "listing" : "listings";
+      var label = group.label + ", " + group.count + " " + noun + (on ? ". Filtering the board. Activate to clear." : ". Filter the board to this city.");
+      var icon = L.divIcon({
+        className: "map-dot-wrap",
+        html: '<span class="map-dot' + (on ? " is-on" : "") + '" style="width:' + d + 'px;height:' + d + 'px"></span>',
+        iconSize: [d, d],
+        iconAnchor: [d / 2, d / 2]
+      });
+      var marker = L.marker(point, {
+        icon: icon,
+        keyboard: true,
+        title: group.label + " · " + group.count + " " + noun,
+        alt: label,
+        riseOnHover: true
+      });
+      marker.bindTooltip(group.label + " · " + group.count + " " + noun, { direction: "top", opacity: 1 });
+      marker.on("click", function () { toggleCity(group.key); });
+      marker.on("add", function () {
+        var elIcon = marker.getElement();
+        if (!elIcon) return;
+        elIcon.setAttribute("aria-label", label);
+        elIcon.setAttribute("aria-pressed", on ? "true" : "false");
+        if (elIcon.dataset.bound) return;
+        elIcon.dataset.bound = "1";
+        elIcon.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleCity(group.key);
+          }
+        });
+        elIcon.addEventListener("focus", function () { marker.openTooltip(); });
+        elIcon.addEventListener("blur", function () { marker.closeTooltip(); });
+      });
+      marker.addTo(cityLayer);
+      bounds.push(point);
+    });
+    if (refit || mapFitted !== state) {
+      if (bounds.length) {
+        cityMap.fitBounds(bounds, { padding: [18, 18], maxZoom: 8, animate: !prefersReduced() });
+      } else {
+        cityMap.setView(centers[state], 6, { animate: false });
+      }
+      mapFitted = state;
+    }
+    cityMap.invalidateSize();
+  }
+
+  function initMap() {
+    if (cityMap || !window.L || !cityMapEl) return;
+    cityMap = L.map(cityMapEl, {
+      scrollWheelZoom: false,
+      minZoom: 4,
+      maxZoom: 12,
+      zoomControl: true,
+      attributionControl: true
+    });
+    cityMap.attributionControl.setPrefix(false);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 12,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      updateWhenIdle: true,
+      keepBuffer: 2
+    }).addTo(cityMap);
+    cityLayer = L.layerGroup().addTo(cityMap);
+    cityMap.setView(centers[state] || [39, -98], 6);
+    var fallback = document.getElementById("map-fallback");
+    if (fallback) fallback.hidden = true;
+    drawMarkers(true);
+  }
+
+  function ensureMap() {
+    var fallback = document.getElementById("map-fallback");
+    loadCoords().then(function () {
+      return loadLeaflet();
+    }).then(function () {
+      initMap();
+      drawMarkers(mapFitted !== state);
+    }).catch(function () {
+      if (fallback) {
+        fallback.hidden = false;
+        fallback.textContent = "The city map did not load. The city list below still filters the board.";
+      }
+    });
+  }
+
+  function watchMap() {
+    if (!cityMapEl || mapObserver || cityMap) return;
+    if (!("IntersectionObserver" in window)) {
+      ensureMap();
+      return;
+    }
+    mapObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        ensureMap();
+        if (mapObserver) mapObserver.disconnect();
+        mapObserver = null;
+      });
+    }, { rootMargin: "200px 0px" });
+    mapObserver.observe(cityMapEl);
+  }
+
+  function setCityFilter(key) {
+    var fromList = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("city-btn");
+    cityFilter = key || "";
+    shown = PAGE;
+    if (!boards[state]) return;
+    fillCities(boards[state].listings || []);
+    apply();
+    if (!fromList && cityFilter) cityFilterClear.focus();
+    if (cityFilter && window.matchMedia("(max-width: 860px)").matches) {
+      var head = document.querySelector(".results-head");
+      if (head) head.scrollIntoView({ behavior: prefersReduced() ? "auto" : "smooth", block: "start" });
+    }
+  }
+
+  function toggleCity(key) {
+    setCityFilter(cityFilter === key ? "" : key);
+  }
+
   function paintChrome() {
     var kind = state;
     var label = stateLabel[kind];
     place.textContent = label;
     logoState.textContent = label;
-    mapCaption.textContent = label + " cities on this board. The shape is a simple outline of the state, not a live map.";
-    mapFl.hidden = kind !== "fl";
-    mapTx.hidden = kind !== "tx";
-    mapCo.hidden = kind !== "co";
+    mapCaption.textContent = label + " cities on this board, sized by listing count. Dots are cities, not individual homes.";
     ["fl", "tx", "co"].forEach(function (key) {
       var source = document.getElementById("source-" + key);
       var dom = document.getElementById("dom-" + key);
@@ -964,19 +1380,35 @@
   }
 
   function fillCities(items) {
-    var counts = {};
-    items.forEach(function (item) {
-      var city = item.city || "Unknown city";
-      counts[city] = (counts[city] || 0) + 1;
-    });
+    var previous = document.activeElement;
+    var restore = previous && previous.classList && previous.classList.contains("city-btn") ? previous.getAttribute("data-city") : "";
+    var groups = cityGroups(items);
     citiesEl.textContent = "";
-    Object.keys(counts).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (city) {
+    groups.forEach(function (group) {
       var li = document.createElement("li");
-      li.appendChild(el("span", "dot"));
-      li.appendChild(el("span", "cname", city));
-      li.appendChild(el("span", "ccount", String(counts[city])));
+      var button = document.createElement("button");
+      var on = group.key === cityFilter;
+      var noun = group.count === 1 ? "listing" : "listings";
+      button.type = "button";
+      button.className = "city-btn";
+      button.setAttribute("data-city", group.key);
+      button.setAttribute("aria-pressed", on ? "true" : "false");
+      var dot = el("span", "dot");
+      dot.setAttribute("aria-hidden", "true");
+      button.appendChild(dot);
+      button.appendChild(el("span", "cname", group.label));
+      button.appendChild(el("span", "ccount", String(group.count)));
+      button.appendChild(el("span", "sr-only", " " + noun + (on ? ". Clear this city filter." : ". Filter the board to this city.")));
+      button.addEventListener("click", function () { toggleCity(group.key); });
+      li.appendChild(button);
       citiesEl.appendChild(li);
     });
+    if (restore) {
+      var escaped = window.CSS && CSS.escape ? CSS.escape(restore) : restore.replace(/"/g, "");
+      var again = citiesEl.querySelector('.city-btn[data-city="' + escaped + '"]');
+      if (again) again.focus();
+    }
+    drawMarkers(false);
   }
 
   function matchingItems(board) {
@@ -984,6 +1416,7 @@
     var stateName = stateSlug[state];
     var showAll = query === "" || query === stateName;
     var items = (board.listings || []).filter(function (item) {
+      if (cityFilter && cityKey(item.city || "") !== cityFilter) return false;
       if (showAll) return true;
       var hay = (fullAddress(state, item) + " " + (item.city || "")).toLowerCase();
       return hay.indexOf(query) !== -1;
@@ -1003,12 +1436,17 @@
     list.textContent = "";
     if (!board || !Array.isArray(board.listings)) return;
     var items = matchingItems(board);
+    var group = activeGroup(board.listings || []);
+    var placeName = group ? " in " + group.label : "";
+    paintFilter(board.listings || []);
     countEl.textContent = String(items.length);
     if (!items.length) {
-      empty.textContent = q.value.trim() ? "No listings match that search." : "No listings on this board yet.";
+      empty.textContent = q.value.trim()
+        ? "No listings match that search" + placeName + "."
+        : (group ? "No listings" + placeName + "." : "No listings on this board yet.");
       empty.style.display = "block";
       moreBtn.hidden = true;
-      showingEl.textContent = "Showing 0 of 0";
+      showingEl.textContent = "Showing 0 of 0" + placeName;
       return;
     }
     var end = Math.min(shown, items.length);
@@ -1019,8 +1457,17 @@
     });
     list.appendChild(frag);
     empty.style.display = "none";
-    showingEl.textContent = "Showing " + end + " of " + items.length;
+    showingEl.textContent = "Showing " + end + " of " + items.length + placeName;
     moreBtn.hidden = end >= items.length;
+  }
+
+  var layout = document.getElementById("layout");
+  var rail = document.getElementById("map");
+
+  function syncOffset() {
+    var header = document.querySelector(".top");
+    if (!header) return;
+    document.documentElement.style.setProperty("--header-offset", Math.ceil(header.getBoundingClientRect().height) + "px");
   }
 
   function render() {
@@ -1034,6 +1481,8 @@
       showingEl.textContent = "";
       countEl.textContent = "";
       citiesEl.textContent = "";
+      hideFilter();
+      if (cityLayer) cityLayer.clearLayers();
       return;
     }
     if (errors[state]) {
@@ -1043,10 +1492,14 @@
       showingEl.textContent = "";
       countEl.textContent = "";
       citiesEl.textContent = "";
+      hideFilter();
+      if (cityLayer) cityLayer.clearLayers();
+      layout.classList.add("is-ready");
       return;
     }
     fillCities(board.listings || []);
     apply();
+    layout.classList.add("is-ready");
   }
 
   function loadBoard(kind) {
@@ -1073,6 +1526,7 @@
     q.value = "";
     sort.value = "score";
     shown = PAGE;
+    cityFilter = "";
     if (boards[next] || errors[next]) {
       render();
       return;
@@ -1092,6 +1546,22 @@
   document.querySelector(".search").addEventListener("submit", function (event) {
     event.preventDefault();
   });
+  document.querySelector('a[href="#map"]').addEventListener("click", function (event) {
+    event.preventDefault();
+    rail.scrollTop = 0;
+    ensureMap();
+    rail.scrollIntoView({behavior: prefersReduced() ? "auto" : "smooth", block: "start"});
+  });
+  document.querySelector('a[href="#score"]').addEventListener("click", function (event) {
+    var wide = window.matchMedia("(min-width: 861px)").matches;
+    if (!wide) return;
+    event.preventDefault();
+    var score = document.getElementById("score");
+    rail.scrollTop = Math.max(0, score.offsetTop - 8);
+    rail.scrollIntoView({behavior: "smooth", block: "start"});
+  });
+  syncOffset();
+  window.addEventListener("resize", syncOffset);
   btnFl.addEventListener("click", function () { setState("fl"); });
   btnTx.addEventListener("click", function () { setState("tx"); });
   btnCo.addEventListener("click", function () { setState("co"); });
@@ -1107,6 +1577,8 @@
     shown += PAGE;
     apply();
   });
+  cityFilterClear.addEventListener("click", function () { setCityFilter(""); });
+  watchMap();
 
   empty.style.display = "block";
   loading.fl = true;

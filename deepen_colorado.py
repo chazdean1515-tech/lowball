@@ -21,11 +21,13 @@ import json
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from urllib.parse import quote
+
+from listing_rules import clean_remark, is_rent_amount, parse_dates, prepare_board
 
 ROOT = Path(__file__).resolve().parent
 CO_PATH = ROOT / "colorado.json"
@@ -249,19 +251,25 @@ def score_listing(listing: dict, page: dict) -> dict:
     ]
     chrono = list(reversed(priced))
     cuts = []
+    rent_cuts = 0
     first_ask = None
     first_ask_date = None
+    cutoff = date.fromisoformat(today_iso()) - timedelta(days=365)
     for i, ev in enumerate(chrono):
-        if first_ask is None:
+        price_is_rent = is_rent_amount(ev["price"], list_price)
+        if first_ask is None and not price_is_rent:
             first_ask = ev["price"]
             first_ask_date = ev["date"]
-        if "listed" in ev["event"].lower() and first_ask == ev["price"]:
+        if "listed" in ev["event"].lower() and first_ask == ev["price"] and not price_is_rent:
             first_ask_date = ev["date"]
         if i == 0:
             continue
         prev = chrono[i - 1]["price"]
         if ev["price"] < prev:
-            cuts.append({"from": prev, "to": ev["price"], "date": ev["date"]})
+            if price_is_rent or is_rent_amount(prev, list_price):
+                rent_cuts += 1
+            else:
+                cuts.append({"from": prev, "to": ev["price"], "date": ev["date"]})
 
     # Latest cut
     if cuts:
@@ -276,7 +284,7 @@ def score_listing(listing: dict, page: dict) -> dict:
             f"Latest cut is {float(round1(pct))}%, from {money(latest['from'])} to "
             f"{money(latest['to'])} on {latest['date']}. +{float(latest_pts)} of 25."
         )
-    elif listing.get("cutPercent"):
+    elif listing.get("cutPercent") and not rent_cuts:
         pct = Decimal(str(listing["cutPercent"]))
         latest_pts = min(Decimal(25), round1(pct * Decimal("2.3")))
         points["latestCut"] = float(latest_pts)
@@ -343,23 +351,29 @@ def score_listing(listing: dict, page: dict) -> dict:
         and any(w in ev["event"].lower() for w in ("listed", "price changed"))
     ]
 
-    # Fall-through detection (pending/contingent then back)
+    # Fall-through detection (pending/contingent then back), only inside 12 months.
     chrono_all = list(reversed(events))
-    saw_pending = False
+    last_pending = None
     pending_dates: list[str] = []
     fell = False
     for ev in chrono_all:
         el = ev["event"].lower()
         if any(w in el for w in ("pending", "contingent")):
-            saw_pending = True
-            pending_dates.append(ev["date"])
-        elif saw_pending and any(
+            last_pending = ev["date"]
+        elif last_pending and any(
             w in el for w in ("listed", "price changed", "relisted", "active")
         ):
-            fell = True
-            break
+            pending_when = parse_dates(last_pending or "")
+            if pending_when and pending_when[0] >= cutoff:
+                fell = True
+                pending_dates.append(last_pending)
+            last_pending = None
 
     off_then_back = bool(removals and current_listed and prior_priced)
+    if off_then_back:
+        removal_dates = parse_dates(removals[0].get("date") or "")
+        if not removal_dates or removal_dates[0] < cutoff:
+            off_then_back = False
     if fell:
         points["fellThrough"] = 12
         extra = f" ({', '.join(pending_dates)})" if pending_dates else ""
@@ -382,7 +396,13 @@ def score_listing(listing: dict, page: dict) -> dict:
         reasons.append(
             f"Prior listing removed {rem_date}, then this one started {cur['date']}. +12."
         )
-        if cur["price"] and prior_ask and cur["price"] < prior_ask:
+        if (
+            cur["price"]
+            and prior_ask
+            and cur["price"] < prior_ask
+            and not is_rent_amount(cur["price"], list_price)
+            and not is_rent_amount(prior_ask, list_price)
+        ):
             points["relistedLower"] = 8
             reasons.append(
                 f"Came back at {money(cur['price'])}, under the prior {money(prior_ask)} ask. +8."
@@ -422,9 +442,11 @@ def score_listing(listing: dict, page: dict) -> dict:
         m = MOTIVATED_RE.search(desc)
         if m:
             start = max(0, m.start() - 30)
-            snippet = re.sub(r"\s+", " ", desc[start : m.end() + 70]).strip()
-            points["motivatedRemarks"] = 4
-            reasons.append(f'Remarks say "{snippet[:160]}". +4.')
+            raw = re.sub(r"\s+", " ", desc[start : m.end() + 70]).strip()
+            snippet = clean_remark(raw[:160])
+            if snippet:
+                points["motivatedRemarks"] = 4
+                reasons.append(f'Remarks say "{snippet}". +4.')
 
     total = sum(Decimal(str(v)) for v in points.values())
     if total > 100:
@@ -443,8 +465,8 @@ def score_listing(listing: dict, page: dict) -> dict:
         listing["status"] = page["status"]
     listing.pop("verifiedFrom", None)
     listing.pop("verified_from", None)
+    listing.pop("deepened", None)
     listing["fetched"] = today_iso()
-    listing["deepened"] = True
     mention = crypto_snippet(desc)
     if mention:
         listing["cryptoMention"] = mention
@@ -456,7 +478,7 @@ def score_listing(listing: dict, page: dict) -> dict:
 def select_targets(listings: list[dict], limit: int) -> list[dict]:
     """Prefer unscored-deep homes: top scores + priority metros."""
     def already(h):
-        return bool(h.get("deepened")) or h.get("source") == "Redfin"
+        return h.get("source") == "Redfin"
 
     remaining = [h for h in listings if not already(h)]
     top_score = sorted(remaining, key=lambda h: (-float(h.get("score") or 0), -(h.get("dom") or 0)))
@@ -660,6 +682,8 @@ def scrub_published(board: dict) -> None:
             found = extract_fetched(str(narrative))
             if found:
                 row["fetched"] = found
+        row.pop("deepened", None)
+    prepare_board(board, "co")
 
 
 def apply_updates(board: dict, updates: dict[str, dict]) -> int:
@@ -720,6 +744,8 @@ def main(argv: list[str] | None = None) -> int:
 
     n = apply_updates(board, stats["updates"])
     CO_PATH.write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n")
+    from city_coords import sync_board_cities
+    sync_board_cities(board, "co")
     print(f"Wrote {CO_PATH.name} ({n} rows updated).")
     return 0 if stats["deepened"] else 2
 
