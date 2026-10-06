@@ -588,10 +588,8 @@
     color: var(--ink);
     border-color: var(--ink);
   }
-  @media (pointer: coarse) {
-    .mapbox.leaflet-container { touch-action: pan-y; }
-    .mapbox.leaflet-container.is-panning { touch-action: none; }
-  }
+  .mapbox.leaflet-container.is-coarse { touch-action: pan-y; }
+  .mapbox.leaflet-container.is-coarse.is-panning { touch-action: none; }
   .leaflet-tooltip {
     background: var(--ink);
     color: #f6f6f4;
@@ -1314,7 +1312,7 @@
         cityMap.setView(centers[state] || [39, -98], 6, { animate: false });
         return;
       }
-      cityMap.fitBounds(points, { padding: [14, 14], animate: false });
+      cityMap.fitBounds(points, { padding: [12, 12], animate: false });
     };
     run();
     requestAnimationFrame(function () {
@@ -1323,25 +1321,42 @@
     });
   }
 
+  function touchPoint(touches) {
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2
+    };
+  }
+
   function bindTwoFingerPan() {
     if (!cityMapEl || cityMapEl.dataset.panBound) return;
     cityMapEl.dataset.panBound = "1";
     var coarse = window.matchMedia("(pointer: coarse)");
+    var last = null;
+    if (coarse.matches) {
+      cityMapEl.classList.add("is-coarse");
+      if (cityMap.dragging) cityMap.dragging.disable();
+    }
     cityMapEl.addEventListener("touchstart", function (event) {
-      if (!coarse.matches || !cityMap || !event.touches || event.touches.length < 2) return;
+      if (!cityMap || !coarse.matches || !event.touches || event.touches.length < 2) return;
       cityMapEl.classList.add("is-panning");
-      cityMap.dragging.enable();
+      last = touchPoint(event.touches);
     }, { capture: true, passive: true });
+    cityMapEl.addEventListener("touchmove", function (event) {
+      if (!cityMap || !last || !event.touches || event.touches.length < 2) return;
+      var now = touchPoint(event.touches);
+      cityMap.panBy([last.x - now.x, last.y - now.y], { animate: false });
+      last = now;
+      event.preventDefault();
+    }, { capture: true, passive: false });
     function endGesture(event) {
-      if (!coarse.matches || !cityMap) return;
       if (!event.touches || event.touches.length < 2) {
         cityMapEl.classList.remove("is-panning");
-        cityMap.dragging.disable();
+        last = null;
       }
     }
     cityMapEl.addEventListener("touchend", endGesture, { capture: true, passive: true });
     cityMapEl.addEventListener("touchcancel", endGesture, { capture: true, passive: true });
-    if (coarse.matches && cityMap.dragging) cityMap.dragging.disable();
     coarse.addEventListener("change", function () {
       if (!cityMap || !cityMap.dragging) return;
       if (coarse.matches) cityMap.dragging.disable();
@@ -1426,6 +1441,8 @@
     cityMap = L.map(cityMapEl, {
       scrollWheelZoom: false,
       dragging: !touch,
+      zoomSnap: 0,
+      zoomDelta: 1,
       minZoom: 4,
       maxZoom: 12,
       zoomControl: true,
@@ -1439,7 +1456,12 @@
       keepBuffer: 2
     }).addTo(cityMap);
     cityLayer = L.markerClusterGroup({
-      maxClusterRadius: 48,
+      maxClusterRadius: function () {
+        // Clusters are laid out on whole zoom levels. The fitted view can sit
+        // half a level lower, which pulls the icons closer. A wider radius
+        // keeps those icons from landing on top of each other.
+        return 96;
+      },
       spiderfyOnMaxZoom: true,
       zoomToBoundsOnClick: true,
       showCoverageOnHover: false,
