@@ -781,6 +781,8 @@ def main() -> int:
         board = json.loads(path.read_text(encoding="utf-8"))
         stats = prepare_board(board, kind)
         path.write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        from city_coords import sync_board_cities
+        sync_board_cities(board, kind)
         print(
             f"{path.name}: {stats['before']} -> {stats['after']} "
             f"(community {stats['community']}, non-home {stats['non_home']}, "

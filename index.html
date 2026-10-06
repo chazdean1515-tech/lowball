@@ -242,6 +242,26 @@
     font-size: 14px;
   }
   .disclaimer { margin-bottom: 16px; }
+  .city-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin: -4px 0 12px;
+    font-size: 14px;
+  }
+  .city-filter[hidden] { display: none; }
+  .city-filter button {
+    font: inherit;
+    font-weight: 700;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid #c8c8c4;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .city-filter button:hover { background: #f4f4f1; }
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -401,7 +421,7 @@
     border-radius: 4px;
   }
   .more:hover { background: #f4f4f1; }
-  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible, .move-quote:focus-visible {
+  .more:focus-visible, .state-btn:focus-visible, nav a:focus-visible, .move-quote:focus-visible, .city-btn:focus-visible, .city-filter button:focus-visible {
     outline: 2px solid var(--char);
     outline-offset: 2px;
   }
@@ -473,13 +493,84 @@
     color: var(--muted);
     font-size: 13px;
   }
+  .map-frame { position: relative; margin-bottom: 8px; }
   .mapbox {
-    background: #f6f6f4;
+    height: 250px;
+    background: #e4e2dc;
     border-radius: 2px;
-    padding: 8px;
-    margin-bottom: 12px;
+    overflow: hidden;
   }
-  .mapbox svg { width: 100%; height: auto; display: block; }
+  .mapbox.leaflet-container {
+    height: 250px;
+    width: 100%;
+    background: #e4e2dc;
+    font-family: "Source Sans 3", "Avenir Next", sans-serif;
+    font-size: 12px;
+  }
+  .map-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .map-fallback[hidden] { display: none; }
+  .leaflet-tile-pane {
+    filter: grayscale(1) sepia(0.28) contrast(0.9) brightness(1.06);
+  }
+  .leaflet-control-attribution {
+    font-size: 10px;
+    line-height: 1.3;
+    background: rgba(246, 246, 244, 0.92);
+    color: var(--char);
+    max-width: 78%;
+  }
+  .leaflet-control-attribution a { color: var(--char); }
+  .leaflet-control-zoom a {
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+  }
+  .map-dot-wrap { background: transparent; border: 0; }
+  .map-dot {
+    display: block;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--char);
+    box-shadow: 0 0 0 2px #a6ff00;
+  }
+  .map-dot.is-on {
+    background: #a6ff00;
+    box-shadow: 0 0 0 2px var(--ink);
+  }
+  .leaflet-tooltip {
+    background: var(--ink);
+    color: #f6f6f4;
+    border: 0;
+    border-radius: 2px;
+    box-shadow: none;
+    font-family: "Source Sans 3", "Avenir Next", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 8px;
+  }
+  .leaflet-tooltip-top:before { border-top-color: var(--ink); }
+  .leaflet-tooltip-bottom:before { border-bottom-color: var(--ink); }
+  .leaflet-tooltip-left:before { border-left-color: var(--ink); }
+  .leaflet-tooltip-right:before { border-right-color: var(--ink); }
+  .cities-label {
+    margin: 8px 0 0;
+    font-family: "Source Sans 3", "Avenir Next", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
   .cities {
     list-style: none;
     margin: 0;
@@ -487,14 +578,28 @@
     max-height: 280px;
     overflow: auto;
   }
-  .cities li {
+  .cities li { margin: 0; padding: 0; }
+  .city-btn {
     display: grid;
     grid-template-columns: 14px 1fr auto;
     gap: 8px;
     align-items: center;
-    padding: 6px 0;
+    width: 100%;
+    margin: 0;
+    padding: 6px 4px;
+    border: 0;
     border-top: 1px solid #ecece9;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .city-btn:hover { background: #f7f7f4; }
+  .city-btn[aria-pressed="true"] {
+    background: #f3f3f0;
+    box-shadow: inset 3px 0 0 #a6ff00;
   }
   .dot {
     width: 8px;
@@ -581,6 +686,8 @@
     .page { padding: 14px 12px 36px; }
     .move-cta { padding: 12px; }
     .move-cta-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .mapbox, .mapbox.leaflet-container { height: 210px; }
+    .cities { max-height: 220px; }
   }
 </style>
 </head>
@@ -623,6 +730,10 @@
     </label>
   </div>
   <p class="showing" id="showing" aria-live="polite"></p>
+  <p class="city-filter" id="city-filter" hidden>
+    <span id="city-filter-text"></span>
+    <button type="button" id="city-filter-clear">Clear city filter</button>
+  </p>
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
   <div class="layout" id="layout">
     <div class="board">
@@ -640,23 +751,14 @@
     </div>
     <aside class="rail" id="map" aria-labelledby="map-heading">
       <h2 id="map-heading">Map</h2>
-      <p class="standin" id="map-caption">Cities on this board. The shape is a simple outline of the state, not a live map.</p>
-      <div class="mapbox" id="map-fl">
-        <svg viewBox="0 0 220 280" role="img" aria-label="Simple outline of Florida">
-          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M14 86 L52 74 L86 78 L104 96 L116 122 L128 156 L136 188 L130 214 L146 236 L158 258 L146 266 L126 246 L116 222 L108 196 L100 168 L90 140 L76 114 L58 98 L30 96 Z"/>
-        </svg>
+      <p class="standin" id="map-caption">Florida cities on this board, sized by listing count. Dots are cities, not individual homes.</p>
+      <p class="sr-only" id="map-help">The map and the city list both filter the board. Clear the city filter with the button above the listings. Search, sort, and Show more keep the city filter.</p>
+      <div class="map-frame">
+        <div class="mapbox" id="city-map" role="region" aria-label="Map of cities on this board"></div>
+        <p class="map-fallback" id="map-fallback">City map loads when this section is on screen.</p>
       </div>
-      <div class="mapbox" id="map-tx" hidden>
-        <svg viewBox="0 0 260 240" role="img" aria-label="Simple outline of Texas">
-          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M10 36 L128 32 L130 70 L176 86 L214 98 L236 128 L220 162 L186 184 L150 208 L112 214 L74 196 L46 160 L28 118 L16 72 Z"/>
-        </svg>
-      </div>
-      <div class="mapbox" id="map-co" hidden>
-        <svg viewBox="0 0 260 180" role="img" aria-label="Simple outline of Colorado">
-          <path fill="#e6e6e3" stroke="#3c3c3c" stroke-width="2" d="M18 28 L242 28 L242 152 L18 152 Z"/>
-        </svg>
-      </div>
-      <ul class="cities" id="cities"></ul>
+      <h3 class="cities-label" id="cities-label">Cities</h3>
+      <ul class="cities" id="cities" aria-labelledby="cities-label"></ul>
       <div class="rules" id="score">
         <h2>How the score works</h2>
         <p class="source-note" id="source-fl">Florida rows were read from public Zillow pages, plus some earlier Redfin pages.</p>
@@ -709,9 +811,10 @@
   var logoState = document.getElementById("logo-state");
   var citiesEl = document.getElementById("cities");
   var mapCaption = document.getElementById("map-caption");
-  var mapFl = document.getElementById("map-fl");
-  var mapTx = document.getElementById("map-tx");
-  var mapCo = document.getElementById("map-co");
+  var cityMapEl = document.getElementById("city-map");
+  var cityFilterEl = document.getElementById("city-filter");
+  var cityFilterText = document.getElementById("city-filter-text");
+  var cityFilterClear = document.getElementById("city-filter-clear");
   var btnFl = document.getElementById("show-fl");
   var btnTx = document.getElementById("show-tx");
   var btnCo = document.getElementById("show-co");
@@ -723,6 +826,15 @@
   var loading = { fl: false, tx: false, co: false };
   var inflight = {};
   var state = "fl";
+  var cityFilter = "";
+  var cityCoords = null;
+  var coordsPromise = null;
+  var leafletPromise = null;
+  var cityMap = null;
+  var cityLayer = null;
+  var mapFitted = "";
+  var mapObserver = null;
+  var centers = { fl: [27.8, -81.7], tx: [31.2, -99.2], co: [39.0, -105.5] };
   var stateLabel = { fl: "Florida", tx: "Texas", co: "Colorado" };
   var stateAbbr = { fl: "FL", tx: "TX", co: "CO" };
   var stateSlug = { fl: "florida", tx: "texas", co: "colorado" };
@@ -924,15 +1036,248 @@
     return card;
   }
 
+  function cityKey(value) {
+    var text = String(value || "").toLowerCase().replace(/\./g, "").replace(/'/g, " ");
+    text = text.replace(/\bsaint\b/g, "st").replace(/\bfort\b/g, "ft").replace(/\bmount\b/g, "mt");
+    text = text.replace(/^pt\s+/, "port ").replace(/\s+pt$/, " point");
+    text = text.replace(/crossroads/g, "cross roads").replace(/\bmc\s+/g, "mc");
+    return text.replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function preferLabel(current, raw, variants) {
+    if ((variants[raw] || 0) > (variants[current] || 0)) return raw;
+    if ((variants[raw] || 0) < (variants[current] || 0)) return current;
+    var rawCap = raw.charAt(0) === raw.charAt(0).toUpperCase();
+    var curCap = current.charAt(0) === current.charAt(0).toUpperCase();
+    if (rawCap !== curCap) return rawCap ? raw : current;
+    return raw.localeCompare(current) < 0 ? raw : current;
+  }
+
+  function cityGroups(items) {
+    var grouped = {};
+    items.forEach(function (item) {
+      var raw = String(item.city || "").trim() || "Unknown city";
+      var key = cityKey(raw);
+      if (!grouped[key]) grouped[key] = { key: key, label: raw, count: 0, variants: {} };
+      var group = grouped[key];
+      group.count += 1;
+      group.variants[raw] = (group.variants[raw] || 0) + 1;
+      group.label = preferLabel(group.label, raw, group.variants);
+    });
+    return Object.keys(grouped).map(function (key) { return grouped[key]; }).sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
+  }
+
+  function coordFor(group) {
+    var table = cityCoords && cityCoords[state];
+    if (!table) return null;
+    var names = Object.keys(group.variants);
+    for (var i = 0; i < names.length; i++) {
+      var point = table[names[i]];
+      if (point && point.length === 2) return [Number(point[0]), Number(point[1])];
+    }
+    return null;
+  }
+
+  function activeGroup(items) {
+    if (!cityFilter) return null;
+    var groups = cityGroups(items || []);
+    for (var i = 0; i < groups.length; i++) {
+      if (groups[i].key === cityFilter) return groups[i];
+    }
+    return null;
+  }
+
+  function prefersReduced() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function paintFilter(items) {
+    var group = activeGroup(items);
+    if (!group) {
+      cityFilterEl.hidden = true;
+      cityFilterText.textContent = "";
+      return;
+    }
+    cityFilterEl.hidden = false;
+    cityFilterText.textContent = "City: " + group.label;
+  }
+
+  function hideFilter() {
+    cityFilterEl.hidden = true;
+  }
+
+  function loadCoords() {
+    if (cityCoords) return Promise.resolve(cityCoords);
+    if (coordsPromise) return coordsPromise;
+    coordsPromise = fetch("cities.json").then(function (res) {
+      if (!res.ok) throw new Error("cities.json returned " + res.status);
+      return res.json();
+    }).then(function (data) {
+      cityCoords = data || {};
+      return cityCoords;
+    }).catch(function () {
+      cityCoords = cityCoords || {};
+      return cityCoords;
+    });
+    return coordsPromise;
+  }
+
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (leafletPromise) return leafletPromise;
+    leafletPromise = new Promise(function (resolve, reject) {
+      var css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "vendor/leaflet/leaflet.css";
+      document.head.appendChild(css);
+      var script = document.createElement("script");
+      script.src = "vendor/leaflet/leaflet.js";
+      script.onload = function () { resolve(); };
+      script.onerror = function () { reject(new Error("map library failed")); };
+      document.body.appendChild(script);
+    });
+    return leafletPromise;
+  }
+
+  function drawMarkers(refit) {
+    if (!cityMap || !cityLayer || !window.L) return;
+    cityLayer.clearLayers();
+    var board = boards[state];
+    var groups = board ? cityGroups(board.listings || []) : [];
+    var bounds = [];
+    groups.forEach(function (group) {
+      var point = coordFor(group);
+      if (!point) return;
+      var d = Math.round(Math.min(28, 8 + Math.sqrt(group.count) * 1.35));
+      var on = group.key === cityFilter;
+      var noun = group.count === 1 ? "listing" : "listings";
+      var label = group.label + ", " + group.count + " " + noun + (on ? ". Filtering the board. Activate to clear." : ". Filter the board to this city.");
+      var icon = L.divIcon({
+        className: "map-dot-wrap",
+        html: '<span class="map-dot' + (on ? " is-on" : "") + '" style="width:' + d + 'px;height:' + d + 'px"></span>',
+        iconSize: [d, d],
+        iconAnchor: [d / 2, d / 2]
+      });
+      var marker = L.marker(point, {
+        icon: icon,
+        keyboard: true,
+        title: group.label + " · " + group.count + " " + noun,
+        alt: label,
+        riseOnHover: true
+      });
+      marker.bindTooltip(group.label + " · " + group.count + " " + noun, { direction: "top", opacity: 1 });
+      marker.on("click", function () { toggleCity(group.key); });
+      marker.on("add", function () {
+        var elIcon = marker.getElement();
+        if (!elIcon) return;
+        elIcon.setAttribute("aria-label", label);
+        elIcon.setAttribute("aria-pressed", on ? "true" : "false");
+        if (elIcon.dataset.bound) return;
+        elIcon.dataset.bound = "1";
+        elIcon.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleCity(group.key);
+          }
+        });
+        elIcon.addEventListener("focus", function () { marker.openTooltip(); });
+        elIcon.addEventListener("blur", function () { marker.closeTooltip(); });
+      });
+      marker.addTo(cityLayer);
+      bounds.push(point);
+    });
+    if (refit || mapFitted !== state) {
+      if (bounds.length) {
+        cityMap.fitBounds(bounds, { padding: [18, 18], maxZoom: 8, animate: !prefersReduced() });
+      } else {
+        cityMap.setView(centers[state], 6, { animate: false });
+      }
+      mapFitted = state;
+    }
+    cityMap.invalidateSize();
+  }
+
+  function initMap() {
+    if (cityMap || !window.L || !cityMapEl) return;
+    cityMap = L.map(cityMapEl, {
+      scrollWheelZoom: false,
+      minZoom: 4,
+      maxZoom: 12,
+      zoomControl: true,
+      attributionControl: true
+    });
+    cityMap.attributionControl.setPrefix(false);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 12,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      updateWhenIdle: true,
+      keepBuffer: 2
+    }).addTo(cityMap);
+    cityLayer = L.layerGroup().addTo(cityMap);
+    cityMap.setView(centers[state] || [39, -98], 6);
+    var fallback = document.getElementById("map-fallback");
+    if (fallback) fallback.hidden = true;
+    drawMarkers(true);
+  }
+
+  function ensureMap() {
+    var fallback = document.getElementById("map-fallback");
+    loadCoords().then(function () {
+      return loadLeaflet();
+    }).then(function () {
+      initMap();
+      drawMarkers(mapFitted !== state);
+    }).catch(function () {
+      if (fallback) {
+        fallback.hidden = false;
+        fallback.textContent = "The city map did not load. The city list below still filters the board.";
+      }
+    });
+  }
+
+  function watchMap() {
+    if (!cityMapEl || mapObserver || cityMap) return;
+    if (!("IntersectionObserver" in window)) {
+      ensureMap();
+      return;
+    }
+    mapObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        ensureMap();
+        if (mapObserver) mapObserver.disconnect();
+        mapObserver = null;
+      });
+    }, { rootMargin: "200px 0px" });
+    mapObserver.observe(cityMapEl);
+  }
+
+  function setCityFilter(key) {
+    var fromList = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("city-btn");
+    cityFilter = key || "";
+    shown = PAGE;
+    if (!boards[state]) return;
+    fillCities(boards[state].listings || []);
+    apply();
+    if (!fromList && cityFilter) cityFilterClear.focus();
+    if (cityFilter && window.matchMedia("(max-width: 860px)").matches) {
+      var head = document.querySelector(".results-head");
+      if (head) head.scrollIntoView({ behavior: prefersReduced() ? "auto" : "smooth", block: "start" });
+    }
+  }
+
+  function toggleCity(key) {
+    setCityFilter(cityFilter === key ? "" : key);
+  }
+
   function paintChrome() {
     var kind = state;
     var label = stateLabel[kind];
     place.textContent = label;
     logoState.textContent = label;
-    mapCaption.textContent = label + " cities on this board. The shape is a simple outline of the state, not a live map.";
-    mapFl.hidden = kind !== "fl";
-    mapTx.hidden = kind !== "tx";
-    mapCo.hidden = kind !== "co";
+    mapCaption.textContent = label + " cities on this board, sized by listing count. Dots are cities, not individual homes.";
     ["fl", "tx", "co"].forEach(function (key) {
       var source = document.getElementById("source-" + key);
       var dom = document.getElementById("dom-" + key);
@@ -951,19 +1296,35 @@
   }
 
   function fillCities(items) {
-    var counts = {};
-    items.forEach(function (item) {
-      var city = item.city || "Unknown city";
-      counts[city] = (counts[city] || 0) + 1;
-    });
+    var previous = document.activeElement;
+    var restore = previous && previous.classList && previous.classList.contains("city-btn") ? previous.getAttribute("data-city") : "";
+    var groups = cityGroups(items);
     citiesEl.textContent = "";
-    Object.keys(counts).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (city) {
+    groups.forEach(function (group) {
       var li = document.createElement("li");
-      li.appendChild(el("span", "dot"));
-      li.appendChild(el("span", "cname", city));
-      li.appendChild(el("span", "ccount", String(counts[city])));
+      var button = document.createElement("button");
+      var on = group.key === cityFilter;
+      var noun = group.count === 1 ? "listing" : "listings";
+      button.type = "button";
+      button.className = "city-btn";
+      button.setAttribute("data-city", group.key);
+      button.setAttribute("aria-pressed", on ? "true" : "false");
+      button.setAttribute("aria-label", group.label + ", " + group.count + " " + noun + (on ? ". Clear this city filter." : ". Filter the board to this city."));
+      var dot = el("span", "dot");
+      dot.setAttribute("aria-hidden", "true");
+      button.appendChild(dot);
+      button.appendChild(el("span", "cname", group.label));
+      button.appendChild(el("span", "ccount", String(group.count)));
+      button.addEventListener("click", function () { toggleCity(group.key); });
+      li.appendChild(button);
       citiesEl.appendChild(li);
     });
+    if (restore) {
+      var escaped = window.CSS && CSS.escape ? CSS.escape(restore) : restore.replace(/"/g, "");
+      var again = citiesEl.querySelector('.city-btn[data-city="' + escaped + '"]');
+      if (again) again.focus();
+    }
+    drawMarkers(false);
   }
 
   function matchingItems(board) {
@@ -971,6 +1332,7 @@
     var stateName = stateSlug[state];
     var showAll = query === "" || query === stateName;
     var items = (board.listings || []).filter(function (item) {
+      if (cityFilter && cityKey(item.city || "") !== cityFilter) return false;
       if (showAll) return true;
       var hay = (fullAddress(state, item) + " " + (item.city || "")).toLowerCase();
       return hay.indexOf(query) !== -1;
@@ -990,12 +1352,17 @@
     list.textContent = "";
     if (!board || !Array.isArray(board.listings)) return;
     var items = matchingItems(board);
+    var group = activeGroup(board.listings || []);
+    var placeName = group ? " in " + group.label : "";
+    paintFilter(board.listings || []);
     countEl.textContent = String(items.length);
     if (!items.length) {
-      empty.textContent = q.value.trim() ? "No listings match that search." : "No listings on this board yet.";
+      empty.textContent = q.value.trim()
+        ? "No listings match that search" + placeName + "."
+        : (group ? "No listings" + placeName + "." : "No listings on this board yet.");
       empty.style.display = "block";
       moreBtn.hidden = true;
-      showingEl.textContent = "Showing 0 of 0";
+      showingEl.textContent = "Showing 0 of 0" + placeName;
       return;
     }
     var end = Math.min(shown, items.length);
@@ -1006,7 +1373,7 @@
     });
     list.appendChild(frag);
     empty.style.display = "none";
-    showingEl.textContent = "Showing " + end + " of " + items.length;
+    showingEl.textContent = "Showing " + end + " of " + items.length + placeName;
     moreBtn.hidden = end >= items.length;
   }
 
@@ -1030,6 +1397,8 @@
       showingEl.textContent = "";
       countEl.textContent = "";
       citiesEl.textContent = "";
+      hideFilter();
+      if (cityLayer) cityLayer.clearLayers();
       return;
     }
     if (errors[state]) {
@@ -1039,6 +1408,8 @@
       showingEl.textContent = "";
       countEl.textContent = "";
       citiesEl.textContent = "";
+      hideFilter();
+      if (cityLayer) cityLayer.clearLayers();
       layout.classList.add("is-ready");
       return;
     }
@@ -1071,6 +1442,7 @@
     q.value = "";
     sort.value = "score";
     shown = PAGE;
+    cityFilter = "";
     if (boards[next] || errors[next]) {
       render();
       return;
@@ -1093,7 +1465,8 @@
   document.querySelector('a[href="#map"]').addEventListener("click", function (event) {
     event.preventDefault();
     rail.scrollTop = 0;
-    rail.scrollIntoView({behavior: "smooth", block: "start"});
+    ensureMap();
+    rail.scrollIntoView({behavior: prefersReduced() ? "auto" : "smooth", block: "start"});
   });
   document.querySelector('a[href="#score"]').addEventListener("click", function (event) {
     var wide = window.matchMedia("(min-width: 861px)").matches;
@@ -1120,6 +1493,8 @@
     shown += PAGE;
     apply();
   });
+  cityFilterClear.addEventListener("click", function () { setCityFilter(""); });
+  watchMap();
 
   empty.style.display = "block";
   loading.fl = true;

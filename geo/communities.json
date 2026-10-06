@@ -1,0 +1,88 @@
+{
+  "note": "Communities that are not 2024 Census places. Coordinates were looked up once offline and checked to sit in the right state. Keys use the same folding as city_coords.norm_city.",
+  "fl": {
+    "perdido key": [
+      30.29951,
+      -87.42925
+    ],
+    "ponte vedra beach": [
+      30.22746,
+      -81.38008
+    ],
+    "st johns": [
+      30.09854,
+      -81.56527
+    ]
+  },
+  "tx": {
+    "adkins": [
+      29.39301,
+      -98.23723
+    ],
+    "brock": [
+      32.67624,
+      -97.94087
+    ],
+    "city by the sea": [
+      27.95169,
+      -97.10499
+    ],
+    "cypress": [
+      29.96911,
+      -95.69717
+    ],
+    "dale": [
+      29.92744,
+      -97.56444
+    ],
+    "del valle": [
+      30.16057,
+      -97.60973
+    ],
+    "dodge": [
+      30.74547,
+      -95.398
+    ],
+    "fischer": [
+      29.97688,
+      -98.26585
+    ],
+    "heathridge": [
+      32.73968,
+      -96.46689
+    ],
+    "hockley": [
+      30.02582,
+      -95.84521
+    ],
+    "huffman": [
+      30.02716,
+      -95.08576
+    ],
+    "kendalia": [
+      29.9691,
+      -98.52224
+    ],
+    "kingwood": [
+      30.04971,
+      -95.18463
+    ],
+    "montalba": [
+      31.87655,
+      -95.73274
+    ],
+    "nemo": [
+      32.25987,
+      -97.65197
+    ],
+    "new caney": [
+      30.15522,
+      -95.21132
+    ],
+    "porter": [
+      30.10244,
+      -95.22966
+    ]
+  },
+  "co": {}
+}
