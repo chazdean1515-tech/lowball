@@ -588,8 +588,6 @@
     color: var(--ink);
     border-color: var(--ink);
   }
-  .mapbox.leaflet-container.is-coarse { touch-action: pan-y; }
-  .mapbox.leaflet-container.is-coarse.is-panning { touch-action: none; }
   .leaflet-tooltip {
     background: var(--ink);
     color: #f6f6f4;
@@ -727,7 +725,7 @@
     .page { padding: 14px 12px 36px; }
     .move-cta { padding: 12px; }
     .move-cta-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .mapbox, .mapbox.leaflet-container { height: 210px; }
+    .mapbox, .mapbox.leaflet-container { height: min(210px, 55vh); }
     .cities { max-height: 220px; }
   }
 </style>
@@ -792,8 +790,8 @@
     </div>
     <aside class="rail" id="map" aria-labelledby="map-heading">
       <h2 id="map-heading">Map</h2>
-      <p class="standin" id="map-caption">Florida cities on this board. Nearby cities stack into a numbered cluster until you zoom in. On a phone, use two fingers to move the map.</p>
-      <p class="sr-only" id="map-help">The map and the city list both filter the board. A numbered cluster is several nearby cities; zoom in to separate them. On a phone, drag with two fingers so the page can still scroll. Clear the city filter with the button above the listings. Search, sort, and Show more keep the city filter.</p>
+      <p class="standin" id="map-caption">Florida cities on this board. Nearby cities stack into a numbered cluster until you zoom in.</p>
+      <p class="sr-only" id="map-help">The map and the city list both filter the board. A numbered cluster is several nearby cities; zoom in to separate them. Clear the city filter with the button above the listings. Search, sort, and Show more keep the city filter.</p>
       <div class="map-frame">
         <div class="mapbox" id="city-map" role="region" aria-label="Map of cities on this board"></div>
         <p class="map-fallback" id="map-fallback">City map loads when this section is on screen.</p>
@@ -1321,49 +1319,6 @@
     });
   }
 
-  function touchPoint(touches) {
-    return {
-      x: (touches[0].clientX + touches[1].clientX) / 2,
-      y: (touches[0].clientY + touches[1].clientY) / 2
-    };
-  }
-
-  function bindTwoFingerPan() {
-    if (!cityMapEl || cityMapEl.dataset.panBound) return;
-    cityMapEl.dataset.panBound = "1";
-    var coarse = window.matchMedia("(pointer: coarse)");
-    var last = null;
-    if (coarse.matches) {
-      cityMapEl.classList.add("is-coarse");
-      if (cityMap.dragging) cityMap.dragging.disable();
-    }
-    cityMapEl.addEventListener("touchstart", function (event) {
-      if (!cityMap || !coarse.matches || !event.touches || event.touches.length < 2) return;
-      cityMapEl.classList.add("is-panning");
-      last = touchPoint(event.touches);
-    }, { capture: true, passive: true });
-    cityMapEl.addEventListener("touchmove", function (event) {
-      if (!cityMap || !last || !event.touches || event.touches.length < 2) return;
-      var now = touchPoint(event.touches);
-      cityMap.panBy([last.x - now.x, last.y - now.y], { animate: false });
-      last = now;
-      event.preventDefault();
-    }, { capture: true, passive: false });
-    function endGesture(event) {
-      if (!event.touches || event.touches.length < 2) {
-        cityMapEl.classList.remove("is-panning");
-        last = null;
-      }
-    }
-    cityMapEl.addEventListener("touchend", endGesture, { capture: true, passive: true });
-    cityMapEl.addEventListener("touchcancel", endGesture, { capture: true, passive: true });
-    coarse.addEventListener("change", function () {
-      if (!cityMap || !cityMap.dragging) return;
-      if (coarse.matches) cityMap.dragging.disable();
-      else cityMap.dragging.enable();
-    });
-  }
-
   function drawMarkers(refit) {
     if (!cityMap || !cityLayer || !window.L) return;
     cityLayer.clearLayers();
@@ -1437,10 +1392,10 @@
 
   function initMap() {
     if (cityMap || !window.L || !window.L.markerClusterGroup || !cityMapEl) return;
-    var touch = coarsePointer();
     cityMap = L.map(cityMapEl, {
       scrollWheelZoom: false,
-      dragging: !touch,
+      dragging: true,
+      touchZoom: true,
       zoomSnap: 0,
       zoomDelta: 1,
       minZoom: 4,
@@ -1478,7 +1433,6 @@
         if (layer.closeTooltip) layer.closeTooltip();
       });
     });
-    bindTwoFingerPan();
     cityMap.setView(centers[state] || [39, -98], 6);
     var fallback = document.getElementById("map-fallback");
     if (fallback) fallback.hidden = true;
@@ -1542,7 +1496,7 @@
     var label = stateLabel[kind];
     place.textContent = label;
     logoState.textContent = label;
-    mapCaption.textContent = label + " cities on this board. Nearby cities stack into a numbered cluster until you zoom in. On a phone, use two fingers to move the map.";
+    mapCaption.textContent = label + " cities on this board. Nearby cities stack into a numbered cluster until you zoom in.";
     ["fl", "tx", "co"].forEach(function (key) {
       var source = document.getElementById("source-" + key);
       var dom = document.getElementById("dom-" + key);
