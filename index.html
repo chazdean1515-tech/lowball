@@ -207,28 +207,6 @@
     font-weight: 650;
   }
   .count { color: var(--muted); font-family: "Source Sans 3", "Avenir Next", sans-serif; font-weight: 500; font-size: 16px; }
-  .results-tools {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-  }
-  .crypto-only {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-    color: var(--char);
-    font-size: 14px;
-    font-weight: 650;
-    cursor: pointer;
-  }
-  .crypto-only input {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-    accent-color: var(--char);
-  }
   .sort {
     display: flex;
     align-items: center;
@@ -581,19 +559,13 @@
 <main class="page">
   <div class="results-head">
     <h1>Motivated sellers in <span id="place">Florida</span> <span class="count" id="count"></span></h1>
-    <div class="results-tools">
-      <label class="crypto-only">
-        <input id="crypto-only" type="checkbox">
-        Accepts crypto
-      </label>
-      <label class="sort">Sort
-        <select id="sort">
-          <option value="score" selected>Lowball score</option>
-          <option value="cut">Price cut</option>
-          <option value="dom">Days on market</option>
-        </select>
-      </label>
-    </div>
+    <label class="sort">Sort
+      <select id="sort">
+        <option value="score" selected>Lowball score</option>
+        <option value="cut">Price cut</option>
+        <option value="dom">Days on market</option>
+      </select>
+    </label>
   </div>
   <p class="showing" id="showing" aria-live="polite"></p>
   <p class="disclaimer" id="disclaimer">Lowball is not affiliated with Redfin, Zillow, or any MLS. These figures come from public listings and are not a live feed.</p>
@@ -684,7 +656,6 @@
   var showingEl = document.getElementById("showing");
   var q = document.getElementById("q");
   var sort = document.getElementById("sort");
-  var cryptoOnlyEl = document.getElementById("crypto-only");
   var place = document.getElementById("place");
   var logoState = document.getElementById("logo-state");
   var citiesEl = document.getElementById("cities");
@@ -1012,9 +983,7 @@
     var query = q.value.trim().toLowerCase();
     var stateName = stateSlug[state];
     var showAll = query === "" || query === stateName;
-    var cryptoOnly = cryptoOnlyEl.checked;
     var items = (board.listings || []).filter(function (item) {
-      if (cryptoOnly && !cryptoMatch(item)) return false;
       if (showAll) return true;
       var hay = (fullAddress(state, item) + " " + (item.city || "")).toLowerCase();
       return hay.indexOf(query) !== -1;
@@ -1036,9 +1005,7 @@
     var items = matchingItems(board);
     countEl.textContent = String(items.length);
     if (!items.length) {
-      if (q.value.trim()) empty.textContent = "No listings match that search.";
-      else if (cryptoOnlyEl.checked) empty.textContent = "No listings on this board say the seller accepts crypto.";
-      else empty.textContent = "No listings on this board yet.";
+      empty.textContent = q.value.trim() ? "No listings match that search." : "No listings on this board yet.";
       empty.style.display = "block";
       moreBtn.hidden = true;
       showingEl.textContent = "Showing 0 of 0";
@@ -1133,10 +1100,6 @@
     if (boards[state]) apply();
   });
   sort.addEventListener("change", function () {
-    shown = PAGE;
-    if (boards[state]) apply();
-  });
-  cryptoOnlyEl.addEventListener("change", function () {
     shown = PAGE;
     if (boards[state]) apply();
   });
