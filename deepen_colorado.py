@@ -720,6 +720,8 @@ def main(argv: list[str] | None = None) -> int:
 
     n = apply_updates(board, stats["updates"])
     CO_PATH.write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n")
+    from city_coords import sync_board_cities
+    sync_board_cities(board, "co")
     print(f"Wrote {CO_PATH.name} ({n} rows updated).")
     return 0 if stats["deepened"] else 2
 

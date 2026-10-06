@@ -51,6 +51,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from city_coords import sync_board_cities
 from listing_rules import (
     address_street_number,
     is_non_home,
@@ -1041,6 +1042,9 @@ def scrub_published(board: dict) -> bool:
 
 def write_if_changed(path: Path, before: str, board: dict, dry_run: bool) -> bool:
     scrub_published(board)
+    kind = "tx" if path == TX_PATH else "co" if path == CO_PATH else "fl"
+    # Adds map coordinates for a new city when geo/ already knows it.
+    sync_board_cities(board, kind, dry_run=dry_run)
     after = json.dumps(board, indent=2, ensure_ascii=False) + "\n"
     if after == before:
         print(f"{path.name}: no change, not rewritten")
