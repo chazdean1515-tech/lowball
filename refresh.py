@@ -9,17 +9,31 @@
 # listings.json, texas.json, or colorado.json.
 #
 # New homes are added only when their latest price cut is dated on or after
-# the cutoff in refresh_state.json ("last_fetch_date", the America/New_York
-# date of the last complete run). The cutoff day itself is included because
-# Zillow dates cuts by day only, so a cut dated on the last run's day may have
-# posted after that run. Homes already on the board are never added twice.
-# A complete, written (not --dry-run, not limited) run moves the cutoff to
-# today; commit refresh_state.json with the boards. Override with --since.
+# that state's cutoff in refresh_state.json ("cutoffs": {"FL": ..., "TX": ...,
+# "CO": ...}, America/New_York dates). The cutoff day itself is included
+# because Zillow dates cuts by day only, so a cut dated on the last run's day
+# may have posted after that run. Homes already on the board are never added
+# twice. An older state file with only "last_fetch_date" is read as that date
+# for every state. --since overrides every state's cutoff and moves nothing.
 #
-# Page caps: --max-pages per city (default 5) and --max-total-pages across
-# all states (default 750). Every request, including a slug that 404s,
-# counts toward the total. If the total cap is hit, the cities left are
-# skipped and the cutoff is not moved, so the next run still covers them.
+# Page budgets: each state (FL, then TX, then CO) gets its own budget,
+# --max-state-pages (default 750), and each city is capped by --max-pages
+# (default 5). Every request, including a slug that 404s, counts. A state
+# that spends its whole budget does not take pages from the next state.
+# --max-total-pages is an optional ceiling across all states (off by default).
+#
+# Cutoffs and rotation: each state walks its cities in A-Z order.
+# - A state that checks every city without hitting its budget moves its
+#   cutoff to today.
+# - A state that hits its budget saves the city it stopped at ("rotation" in
+#   refresh_state.json). The next run starts at that city and wraps around,
+#   so the same cities are not skipped every day. Its cutoff does not move to
+#   today. Once a run gets past the end of the A-Z list, every city has been
+#   checked since the day that pass began, so the cutoff moves to that day
+#   (never backward).
+# Only a written run without --city or --since changes refresh_state.json.
+# --dry-run prints what would change. --state XX runs and updates one state.
+# Commit refresh_state.json with the boards.
 #
 # Colorado starts from CO_SEED_CITIES when colorado.json has no cities yet.
 #
@@ -40,6 +54,7 @@
 from __future__ import annotations
 
 import argparse
+import bisect
 import json
 import re
 import sys
@@ -65,7 +80,11 @@ TX_PATH = ROOT / "texas.json"
 CO_PATH = ROOT / "colorado.json"
 STATE_PATH = ROOT / "refresh_state.json"
 DEFAULT_MAX_PAGES = 5
-DEFAULT_MAX_TOTAL_PAGES = 750
+# Page budget for each state on its own. A state that spends it does not
+# take pages from the next state.
+DEFAULT_MAX_STATE_PAGES = 750
+# Optional ceiling across all states. None means no overall ceiling.
+DEFAULT_MAX_TOTAL_PAGES = None
 TZ = ZoneInfo("America/New_York")
 UA = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -73,6 +92,9 @@ UA = (
 )
 LAND_TYPES = {"LOT", "LAND", "VACANT_LAND", "VACANTLAND"}
 KIND_STATE = {"fl": "FL", "tx": "TX", "co": "CO"}
+# Run order. Each state has its own page budget, cutoff, and rotation.
+KIND_ORDER = ("fl", "tx", "co")
+STATES = tuple(KIND_STATE[k] for k in KIND_ORDER)
 HOME_FL = {
     "SINGLE_FAMILY": "Single family",
     "CONDO": "Condo",
@@ -564,7 +586,7 @@ def fetch_city_lists(
                 break
             if budget["left"] <= 0:
                 budget["hit"] = True
-                print(f"{city}, {state}: stopped, total page cap reached")
+                print(f"{city}, {state}: stopped, {state} page budget reached")
                 break
             budget["left"] -= 1
             budget["used"] += 1
@@ -810,6 +832,27 @@ def new_listing(kind: str, obs: dict) -> dict:
     }
 
 
+def city_order(cities: list[str], resume: str | None = None) -> tuple[list[str], int]:
+    """Cities in a stable A-Z order and the index to start at.
+
+    The start is the saved rotation city. If that city has left the board,
+    start at the next city after it in A-Z order.
+    """
+    ordered = sorted(cities, key=lambda c: (norm_place(c), c))
+    if not resume or not ordered:
+        return ordered, 0
+    keys = [norm_place(c) for c in ordered]
+    want = norm_place(resume)
+    if want in keys:
+        return ordered, keys.index(want)
+    return ordered, bisect.bisect_left(keys, want) % len(ordered)
+
+
+def new_budget(state_cap: int, total_left: int | None = None) -> dict:
+    left = state_cap if total_left is None else min(state_cap, max(total_left, 0))
+    return {"left": left, "limit": left, "cap": state_cap, "used": 0, "hit": False}
+
+
 def refresh_board(
     kind: str,
     board: dict,
@@ -818,6 +861,7 @@ def refresh_board(
     delay: float,
     since: str,
     budget: dict,
+    resume_city: str | None = None,
 ):
     state = KIND_STATE[kind]
     listings = board["listings"]
@@ -850,18 +894,35 @@ def refresh_board(
     remove_ids = set()
     seen_new = set()
     stats["examples"] = []
-    for city in wanted:
+    ordered, start = city_order(wanted, None if city_filter else resume_city)
+    stats["city_total"] = len(ordered)
+    stats["start_city"] = ordered[start] if ordered else None
+    # stop_city: first city not fully requested because the budget ran out.
+    # stop_wrapped: that city came after the run passed the end of the A-Z list.
+    stats["stop_city"] = None
+    stats["stop_wrapped"] = False
+    if start:
+        print(f"{state}: resuming at {ordered[start]} (where the last capped run stopped), then wrapping to the start")
+    for step in range(len(ordered)):
+        idx = (start + step) % len(ordered)
+        city = ordered[idx]
+        wrapped = start > 0 and idx < start
         if budget["left"] <= 0:
             budget["hit"] = True
             stats["cities_capped_out"] += 1
+            if stats["stop_city"] is None:
+                stats["stop_city"], stats["stop_wrapped"] = city, wrapped
             continue
         pages = fetch_city_lists(city, state, max_pages, delay, budget)
+        if budget["hit"] and stats["stop_city"] is None:
+            # The budget ran out partway through this city.
+            stats["stop_city"], stats["stop_wrapped"] = city, wrapped
         if not pages:
             stats["skipped"] += 1
             continue
         stats["cities"] += 1
         stats["pages"] += len(pages)
-        if delay and wanted[-1] != city:
+        if delay and step < len(ordered) - 1:
             time.sleep(delay)
         for page in pages:
             for item in page["results"]:
@@ -926,17 +987,31 @@ def load_state() -> dict:
     return data if isinstance(data, dict) else {}
 
 
-def resolve_since(arg_since: str | None, state: dict, *boards: dict) -> tuple[str, str]:
+def resolve_cutoffs(arg_since: str | None, state: dict, *boards: dict) -> tuple[dict, dict]:
+    """Cutoff date and its source for every state.
+
+    --since wins for every state. Then refresh_state.json "cutoffs". A state
+    file from before per-state cutoffs has one "last_fetch_date"; that date is
+    used for every state. With no state file, the oldest board fetch date.
+    """
     if arg_since:
-        return parse_day(arg_since), "--since"
-    saved = state.get("last_fetch_date")
-    if saved:
-        return parse_day(saved), f"{STATE_PATH.name} last_fetch_date"
-    # No state file yet: fall back to the older board fetch date, never wider.
+        day = parse_day(arg_since)
+        return {st: day for st in STATES}, {st: "--since" for st in STATES}
+    saved = state.get("cutoffs") if isinstance(state.get("cutoffs"), dict) else {}
+    legacy = state.get("last_fetch_date")
     dates = [b.get("fetched") for b in boards if b.get("fetched")]
-    if dates:
-        return parse_day(min(dates)), "board fetched date (no state file)"
-    return today_iso(), "today (no state file or board date)"
+    cutoffs, sources = {}, {}
+    for st in STATES:
+        if saved.get(st):
+            cutoffs[st], sources[st] = parse_day(saved[st]), f"{STATE_PATH.name} cutoffs.{st}"
+        elif legacy:
+            cutoffs[st], sources[st] = parse_day(legacy), f"{STATE_PATH.name} last_fetch_date"
+        elif dates:
+            # No state file yet: fall back to the older board fetch date, never wider.
+            cutoffs[st], sources[st] = parse_day(min(dates)), "board fetched date (no state file)"
+        else:
+            cutoffs[st], sources[st] = today_iso(), "today (no state file or board date)"
+    return cutoffs, sources
 
 
 def parse_day(value: str) -> str:
@@ -946,25 +1021,82 @@ def parse_day(value: str) -> str:
         raise SystemExit(f"Cutoff {value!r} is not YYYY-MM-DD. Nothing was requested.")
 
 
-def save_state(state: dict, stats: dict) -> None:
-    now = datetime.now(TZ)
-    out = dict(state)
-    out.update(
-        {
-            "timezone": "America/New_York",
-            "last_fetch": now.isoformat(timespec="seconds"),
-            "last_fetch_date": now.date().isoformat(),
-            "rule": (
-                "refresh.py adds a new home only when its latest Zillow price cut is dated "
-                "on or after last_fetch_date. Updated after each complete, written run."
-            ),
-            "last_run": stats,
-        }
-    )
+STATE_RULE = (
+    "refresh.py adds a new home only when its latest Zillow price cut is dated on or after "
+    "that state's date in cutoffs. A state's cutoff moves to today when a written run checks "
+    "every city in that state without hitting its own page budget. A state that hits its "
+    "budget saves the city it stopped at in rotation; the next run starts there, and once a "
+    "run passes the end of the A-Z city list the cutoff moves to the day that pass began. "
+    "last_fetch_date is the oldest state cutoff, kept for older readers."
+)
+
+
+def next_cutoff(prev_cutoff: str, prev_rotation: dict | None, stats: dict, today: str):
+    """New (cutoff, rotation) for one state after a full (not --city/--since) run.
+
+    - No stop city: every city was requested within the budget, so the cutoff
+      is today and the rotation is cleared.
+    - Stopped after passing the end of the A-Z list: the pass that began on
+      the saved cycle_start is finished, so the cutoff moves to that day. A new
+      pass starts today at the stop city.
+    - Stopped before the end of the list: the cutoff stays. The next run
+      starts at the stop city, in the same pass.
+    The cutoff never moves backward.
+    """
+    cycle_start = (prev_rotation or {}).get("cycle_start") or today
+    stop = stats.get("stop_city")
+    if not stop:
+        return max(prev_cutoff, today), None
+    if stats.get("stop_wrapped"):
+        return max(prev_cutoff, cycle_start), {"resume_city": stop, "cycle_start": today}
+    return prev_cutoff, {"resume_city": stop, "cycle_start": cycle_start}
+
+
+def plan_state(
+    state: dict,
+    cutoffs: dict,
+    results: dict,
+    today: str,
+    now_iso: str | None = None,
+    last_run: dict | None = None,
+) -> dict:
+    """Return the new refresh_state.json contents. Does not write.
+
+    results maps a state ("FL") to its refresh_board stats; only those states
+    move. Other states keep their cutoff and rotation. With no results this
+    just migrates an older file to per-state cutoffs.
+    """
+    old_rotation = state.get("rotation") if isinstance(state.get("rotation"), dict) else {}
+    new_cutoffs = {st: cutoffs[st] for st in STATES}
+    rotation = {st: dict(old_rotation[st]) for st in STATES if isinstance(old_rotation.get(st), dict)}
+    for st, stats in results.items():
+        new_cutoffs[st], rot = next_cutoff(cutoffs[st], rotation.get(st), stats, today)
+        if rot:
+            rotation[st] = rot
+        else:
+            rotation.pop(st, None)
+    out = {
+        "timezone": "America/New_York",
+        "cutoffs": new_cutoffs,
+        "rotation": rotation,
+        "last_fetch": now_iso or state.get("last_fetch"),
+        "last_fetch_date": min(new_cutoffs.values()),
+        "rule": STATE_RULE,
+    }
+    if last_run is not None:
+        out["last_run"] = last_run
+    elif "last_run" in state:
+        out["last_run"] = state["last_run"]
+    for key, value in state.items():
+        out.setdefault(key, value)
+    return out
+
+
+def save_state(out: dict) -> None:
     temp = STATE_PATH.with_suffix(".json.tmp")
     temp.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     temp.replace(STATE_PATH)
-    print(f"{STATE_PATH.name}: cutoff moved to {out['last_fetch_date']}")
+    print(f"{STATE_PATH.name}: written, cutoffs " + ", ".join(f"{st} {d}" for st, d in out["cutoffs"].items()))
 
 
 def counts_changed(kind: str, board: dict) -> None:
@@ -1088,9 +1220,9 @@ def _finish(
     befores,
     changed,
     stats,
-    since,
-    since_src,
-    budget,
+    cutoffs,
+    cutoff_src,
+    budgets,
     state,
 ) -> int:
     for kind in boards:
@@ -1107,8 +1239,10 @@ def _finish(
     removed = sum(stats[k]["removed"] for k in stats)
     updated = sum(stats[k]["updated"] for k in stats)
     print(f"rechecked {rechecked}, added {added}, removed {removed} (updated {updated})")
-    old_cut = sum(stats[k].get("old_cut", 0) for k in stats)
-    print(f"cutoff {since} ({since_src}): left off {old_cut} rows whose latest cut is older or undated")
+    for kind in KIND_ORDER:
+        st = KIND_STATE[kind]
+        if st in budgets:
+            print(f"{st} cutoff {cutoffs[st]} ({cutoff_src[st]}): left off {stats[kind].get('old_cut', 0)} rows whose latest cut is older or undated")
     for kind, _fname, label in labels:
         examples = stats[kind].get("examples") or []
         if examples:
@@ -1120,30 +1254,69 @@ def _finish(
             for kind, _fname, _label in labels
         )
     )
-    print(f"pages requested {budget['used']} of the {budget['cap']} total cap; city cap {args.max_pages}")
-    limited = bool(args.city or args.state or args.since)
+    total_used = sum(b["used"] for b in budgets.values())
+    ceiling = f"; overall ceiling {args.max_total_pages}" if args.max_total_pages is not None else ""
+    print(
+        f"pages requested {total_used}; per-state budget {args.max_state_pages}{ceiling}; city cap {args.max_pages}"
+    )
+    capped = []
+    for kind in KIND_ORDER:
+        st = KIND_STATE[kind]
+        if st not in budgets:
+            continue
+        b, s_ = budgets[st], stats[kind]
+        if s_.get("stop_city"):
+            capped.append(st)
+            print(
+                f"{st}: {b['used']} of {b['limit']} pages, "
+                f"budget reached at {s_['stop_city']}; {s_.get('cities_capped_out', 0)} of "
+                f"{s_.get('city_total', 0)} cities were not requested"
+            )
+        else:
+            print(f"{st}: {b['used']} pages, all {s_.get('city_total', 0)} cities requested within the {b['cap']}-page budget")
+    limited = bool(args.city or args.since)
     if limited:
-        print("Limited run. Cities that were not named were not requested.")
-    if budget["hit"]:
-        skipped = sum(stats[k].get("cities_capped_out", 0) for k in stats)
-        print(f"Total page cap reached; {skipped} cities were not requested.")
-    if args.dry_run:
-        print(f"{STATE_PATH.name}: dry run, cutoff not moved")
-    elif limited or budget["hit"]:
-        print(f"{STATE_PATH.name}: cutoff not moved (limited run or total page cap reached)")
+        print("Limited run (--city or --since). Cities that were not named were not requested.")
+    if capped:
+        print("Page budget reached for " + ", ".join(capped) + ". Other states were not affected.")
     else:
-        save_state(
-            state,
-            {
-                "since": since,
-                "pages": budget["used"],
-                "added": added,
-                "removed": removed,
-                "updated": updated,
-                "rechecked": rechecked,
-                "left_off_old_cut": old_cut,
-            },
-        )
+        print("Every state finished within its page budget.")
+    if limited:
+        print(f"{STATE_PATH.name}: cutoffs not moved (limited run)")
+    else:
+        today = today_iso()
+        now = datetime.now(TZ).isoformat(timespec="seconds")
+        results = {KIND_STATE[k]: stats[k] for k in KIND_ORDER if KIND_STATE[k] in budgets}
+        last_run = {
+            st: {
+                "since": cutoffs[st],
+                "pages": budgets[st]["used"],
+                "complete": not stats[k].get("stop_city"),
+                "stopped_at": stats[k].get("stop_city"),
+                "added": stats[k]["added"],
+                "removed": stats[k]["removed"],
+                "updated": stats[k]["updated"],
+                "rechecked": stats[k]["rechecked"],
+                "left_off_old_cut": stats[k].get("old_cut", 0),
+            }
+            for k in KIND_ORDER
+            for st in [KIND_STATE[k]]
+            if st in budgets
+        }
+        planned = plan_state(state, cutoffs, results, today, now_iso=now, last_run=last_run)
+        verb = "would move" if args.dry_run else "moved"
+        for st in results:
+            new = planned["cutoffs"][st]
+            rot = planned["rotation"].get(st)
+            nxt = f"; next run starts at {rot['resume_city']}" if rot else ""
+            if new != cutoffs[st]:
+                print(f"{st} cutoff {verb} {cutoffs[st]} -> {new}{nxt}")
+            else:
+                print(f"{st} cutoff stays {cutoffs[st]}{nxt}")
+        if args.dry_run:
+            print(f"{STATE_PATH.name}: dry run, not written")
+        else:
+            save_state(planned)
     for kind, _fname, label in labels:
         print(f"top {label}: {top_home(kind, boards[kind]['listings'])}")
     return 0
@@ -1241,16 +1414,24 @@ def run(args) -> int:
     snaps = {k: snapshot(boards[k]) for k in boards}
     state_filter = args.state.upper() if args.state else None
     state = load_state()
-    since, since_src = resolve_since(args.since, state, fl_board, tx_board, co_board)
-    print(f"Adding only homes whose latest cut is dated {since} or later ({since_src}).")
-    budget = {"left": args.max_total_pages, "cap": args.max_total_pages, "used": 0, "hit": False}
-    stats = {k: empty_stats() for k in boards}
+    cutoffs, cutoff_src = resolve_cutoffs(args.since, state, fl_board, tx_board, co_board)
+    limited = bool(args.city or args.since)
+    rotation = {} if limited else (state.get("rotation") if isinstance(state.get("rotation"), dict) else {})
+    kinds = [KIND_STATE[k] for k in KIND_ORDER if state_filter in (None, KIND_STATE[k])]
+    for st in kinds:
+        print(f"{st}: adding only homes whose latest cut is dated {cutoffs[st]} or later ({cutoff_src[st]}).")
     try:
-        for kind, abbrev in (("fl", "FL"), ("tx", "TX"), ("co", "CO")):
-            if state_filter in (None, abbrev):
-                stats[kind] = refresh_board(
-                    kind, boards[kind], args.city, args.max_pages, args.delay, since, budget
-                )
+        stats, budgets = refresh_states(
+            boards,
+            kinds,
+            args.city,
+            args.max_pages,
+            args.delay,
+            cutoffs,
+            args.max_state_pages,
+            args.max_total_pages,
+            rotation,
+        )
     except ListBlocked as exc:
         print(f"Stopped. {exc} No files were written.", file=sys.stderr)
         return 2
@@ -1273,7 +1454,37 @@ def run(args) -> int:
             stats["co"]["deepened"] = deepen_limit
         elif code not in (0, 2):
             print(f"Colorado deepen exited {code}; list refresh results are kept.", file=sys.stderr)
-    return _finish(args, boards, befores, changed, stats, since, since_src, budget, state)
+    return _finish(args, boards, befores, changed, stats, cutoffs, cutoff_src, budgets, state)
+
+
+def refresh_states(
+    boards: dict,
+    kinds: list[str],
+    city_filter: str | None,
+    max_pages: int | None,
+    delay: float,
+    cutoffs: dict,
+    state_cap: int,
+    total_cap: int | None,
+    rotation: dict,
+) -> tuple[dict, dict]:
+    """Refresh each named state with its own page budget, cutoff, and rotation."""
+    stats = {k: empty_stats() for k in boards}
+    budgets = {}
+    total_left = total_cap
+    for kind in KIND_ORDER:
+        st = KIND_STATE[kind]
+        if st not in kinds:
+            continue
+        budget = new_budget(state_cap, total_left)
+        resume = (rotation.get(st) or {}).get("resume_city") if isinstance(rotation.get(st), dict) else None
+        stats[kind] = refresh_board(
+            kind, boards[kind], city_filter, max_pages, delay, cutoffs[st], budget, resume_city=resume
+        )
+        budgets[st] = budget
+        if total_left is not None:
+            total_left = max(0, total_left - budget["used"])
+    return stats, budgets
 
 
 
@@ -1458,21 +1669,126 @@ def self_test() -> int:
     if created.get("deepened"):
         print("self-test failed: new listing published deepened", file=sys.stderr)
         return 1
+    failed = self_test_state_budgets()
+    if failed:
+        print(f"self-test failed: {failed}", file=sys.stderr)
+        return 1
     print("self-test ok")
     return 0
+
+
+def self_test_state_budgets() -> str | None:
+    """Per-state budgets, cutoffs, and rotation, with a stub list fetch (no network)."""
+    requested = []
+
+    def stub_fetch(url: str):
+        slug = url.split("zillow.com/")[1].split("/")[0]
+        city = slug.rsplit("-", 1)[0].replace("-", " ")
+        requested.append(city)
+        payload = {
+            "props": {"pageProps": {"searchPageState": {
+                "regionState": {"regionInfo": [{"regionName": city}]},
+                "cat1": {"searchResults": {"listResults": []}, "searchList": {"pagination": {}}},
+                "categoryTotals": {"cat1": {"totalResultCount": 0}},
+            }}}
+        }
+        return 200, url, '<script id="__NEXT_DATA__" type="application/json">' + json.dumps(payload) + "</script>"
+
+    def boards():
+        return {
+            "fl": {"listings": [{"city": c} for c in ("Delta", "Alpha", "Charlie", "Bravo")]},
+            "tx": {"listings": [{"city": c} for c in ("Xray", "Yankee", "Zulu")]},
+            "co": {"listings": [{"city": c} for c in ("Denver", "Aurora")]},
+        }
+
+    real_fetch = globals()["fetch"]
+    globals()["fetch"] = stub_fetch
+    try:
+        if city_order(["Delta", "Alpha", "Charlie"], "Bravo") != (["Alpha", "Charlie", "Delta"], 1):
+            return "rotation did not resume after a city that left the board"
+        old = {"last_fetch_date": "2026-10-05"}
+        cutoffs, _src = resolve_cutoffs(None, old)
+        if cutoffs != {"FL": "2026-10-05", "TX": "2026-10-05", "CO": "2026-10-05"}:
+            return f"last_fetch_date not migrated to every state: {cutoffs}"
+        if resolve_cutoffs("2026-09-01", {"cutoffs": cutoffs})[0]["TX"] != "2026-09-01":
+            return "--since did not override a state cutoff"
+        migrated = plan_state(old, cutoffs, {}, "2026-10-08")
+        if migrated["cutoffs"] != cutoffs or migrated["rotation"] or migrated["last_fetch_date"] != "2026-10-05":
+            return f"migration changed dates: {migrated}"
+
+        # Day 1: budget 2 per state. FL spends all of it; TX and CO still get 2 each.
+        stats, budgets = refresh_states(boards(), list(STATES), None, 5, 0, cutoffs, 2, None, {})
+        if [budgets[st]["used"] for st in STATES] != [2, 2, 2]:
+            return f"a state was starved: {budgets}"
+        if requested[:2] != ["alpha", "bravo"] or stats["fl"]["stop_city"] != "Charlie":
+            return f"FL order or stop city wrong: {requested[:2]} {stats['fl']['stop_city']}"
+        if stats["co"]["stop_city"] is not None:
+            return "CO finished its cities but was marked capped"
+        day1 = plan_state(migrated, cutoffs, {st: stats[k] for k, st in KIND_STATE.items()}, "2026-10-08")
+        if day1["cutoffs"] != {"FL": "2026-10-05", "TX": "2026-10-05", "CO": "2026-10-08"}:
+            return f"day 1 cutoffs {day1['cutoffs']}"
+        if day1["rotation"].get("FL") != {"resume_city": "Charlie", "cycle_start": "2026-10-08"}:
+            return f"day 1 FL rotation {day1['rotation']}"
+        if day1["rotation"].get("TX", {}).get("resume_city") != "Zulu" or "CO" in day1["rotation"]:
+            return f"day 1 TX/CO rotation {day1['rotation']}"
+
+        # Day 2: FL resumes at Charlie, does Charlie and Delta, then the budget
+        # runs out at Alpha after the wrap, so FL's cutoff moves to Oct 8.
+        requested.clear()
+        stats, budgets = refresh_states(
+            boards(), ["FL", "TX"], None, 5, 0, day1["cutoffs"], 2, None, day1["rotation"]
+        )
+        if requested[:2] != ["charlie", "delta"]:
+            return f"FL did not resume where it stopped: {requested}"
+        if stats["fl"]["stop_city"] != "Alpha" or not stats["fl"]["stop_wrapped"]:
+            return f"FL day 2 stop {stats['fl']['stop_city']} {stats['fl']['stop_wrapped']}"
+        if "CO" in budgets:
+            return "CO ran when only FL and TX were named"
+        day2 = plan_state(day1, day1["cutoffs"], {"FL": stats["fl"], "TX": stats["tx"]}, "2026-10-09")
+        # TX (3 cities) also wraps: Zulu, Xray, then stops at Yankee.
+        if day2["cutoffs"] != {"FL": "2026-10-08", "TX": "2026-10-08", "CO": "2026-10-08"}:
+            return f"day 2 cutoffs {day2['cutoffs']}"
+        if day2["rotation"] != {
+            "FL": {"resume_city": "Alpha", "cycle_start": "2026-10-09"},
+            "TX": {"resume_city": "Yankee", "cycle_start": "2026-10-09"},
+        }:
+            return f"day 2 rotation {day2['rotation']}"
+
+        # A capped state that has not reached the end of its list keeps its cutoff.
+        same, rot = next_cutoff("2026-10-05", {"resume_city": "B", "cycle_start": "2026-10-07"},
+                                {"stop_city": "C", "stop_wrapped": False}, "2026-10-09")
+        if same != "2026-10-05" or rot != {"resume_city": "C", "cycle_start": "2026-10-07"}:
+            return f"mid-pass cap moved the cutoff: {same} {rot}"
+
+        # The optional overall ceiling still applies on top of the state budgets.
+        _stats, budgets = refresh_states(boards(), list(STATES), None, 5, 0, cutoffs, 2, 3, {})
+        if [budgets[st]["used"] for st in STATES] != [2, 1, 0]:
+            return f"overall ceiling not applied: {budgets}"
+    finally:
+        globals()["fetch"] = real_fetch
+    return None
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Refresh Lowball from Zillow price-reduced city lists.")
     parser.add_argument("--city", help="Only this city, and only if it is already on the board.")
-    parser.add_argument("--state", choices=["FL", "TX", "CO", "fl", "tx", "co"], help="Only this state.")
+    parser.add_argument(
+        "--state", choices=["FL", "TX", "CO", "fl", "tx", "co"],
+        help="Only this state. Without --city or --since it moves only this state's cutoff and rotation.",
+    )
     parser.add_argument(
         "--max-pages", type=int, default=DEFAULT_MAX_PAGES,
         help=f"Stop each city after this many list pages (default {DEFAULT_MAX_PAGES}).",
     )
     parser.add_argument(
+        "--max-state-pages", type=int, default=DEFAULT_MAX_STATE_PAGES,
+        help=f"Page budget for each state on its own (default {DEFAULT_MAX_STATE_PAGES}). "
+        "A state that spends it does not take pages from the next state.",
+    )
+    parser.add_argument(
         "--max-total-pages", type=int, default=DEFAULT_MAX_TOTAL_PAGES,
-        help=f"Stop the whole run after this many list requests (default {DEFAULT_MAX_TOTAL_PAGES}).",
+        help="Optional ceiling on list requests across all states (default: none). "
+        "Each state still stops at --max-state-pages.",
     )
     parser.add_argument(
         "--since",
@@ -1490,6 +1806,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true", help="Do not write JSON files.")
     parser.add_argument("--self-test", action="store_true", help="Run local checks and do not touch the boards.")
     args = parser.parse_args(argv)
+    if args.max_state_pages < 0 or (args.max_total_pages is not None and args.max_total_pages < 0):
+        parser.error("page budgets cannot be negative")
     if args.self_test:
         return self_test()
     return run(args)

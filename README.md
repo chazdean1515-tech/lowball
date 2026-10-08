@@ -6,6 +6,24 @@ Local sketch of a Florida listing board. It is not published and it is not a liv
 
 Fetched Saturday, Oct 3, 2026 (America/New_York). Every price, cut, day count, status, and remark on a card was read from that listing's public page at fetch time.
 
+## Daily refresh
+
+Run from the repo root:
+
+```
+python3 refresh.py
+```
+
+It rechecks homes already on the boards (`listings.json`, `texas.json`, `colorado.json`) and adds newly price-cut homes in the same cities, from Zillow price-reduced search lists only.
+
+- **Page budget per state.** FL, TX, and CO each get their own budget (`--max-state-pages`, default 750). Each city is capped at `--max-pages` (default 5). A state that spends its whole budget does not take pages from the next state. `--max-total-pages` is an optional ceiling across all states and is off by default.
+- **Cutoff per state.** `refresh_state.json` keeps one cutoff per state in `"cutoffs"`. A new home is added only when its latest cut is dated on or after its state's cutoff. When a state checks every city without hitting its budget, its cutoff moves to today. An older file with one `"last_fetch_date"` is read as that date for every state. `last_fetch_date` is still written, as the oldest state cutoff.
+- **Rotation.** Each state walks its cities A to Z. If a state hits its budget, the city where it stopped is saved under `"rotation"`. The next run starts there and wraps around, so the same cities are not skipped every day. When a run gets past the end of the list, every city has been checked since the day that pass began, so the state's cutoff moves to that day. It never moves backward.
+- **Flags.** `--state FL|TX|CO` runs one state and updates only that state's cutoff. `--city` and `--since` are limited runs and do not change `refresh_state.json`. `--since YYYY-MM-DD` overrides every state's cutoff. `--dry-run` writes nothing and prints what the cutoffs would become.
+- Commit `refresh_state.json` together with the boards after each run.
+
+Checks: `python3 refresh.py --self-test` (no network). Light network check that writes nothing: `python3 refresh.py --dry-run --max-state-pages 2`.
+
 ## How many listings
 
 24 verified listings.
