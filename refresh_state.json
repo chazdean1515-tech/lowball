@@ -1,12 +1,30 @@
 {
   "timezone": "America/New_York",
   "cutoffs": {
-    "FL": "2026-10-05",
+    "FL": "2026-10-09",
     "TX": "2026-10-05",
     "CO": "2026-10-05"
   },
-  "rotation": {},
-  "last_fetch": "2026-10-05T07:44:51-04:00",
+  "rotation": {
+    "TX": {
+      "resume_city": "Southlake",
+      "cycle_start": "2026-10-09"
+    }
+  },
+  "last_fetch": "2026-10-09T07:27:00-04:00",
   "last_fetch_date": "2026-10-05",
-  "rule": "refresh.py adds a new home only when its latest Zillow price cut is dated on or after that state's date in cutoffs. A state's cutoff moves to today when a written run checks every city in that state without hitting its own page budget. A state that hits its budget saves the city it stopped at in rotation; the next run starts there, and once a run passes the end of the A-Z city list the cutoff moves to the day that pass began. last_fetch_date is the oldest state cutoff, kept for older readers."
+  "rule": "refresh.py adds a new home only when its latest Zillow price cut is dated on or after that state's date in cutoffs. A state's cutoff moves to today when a written run checks every city in that state without hitting its own page budget. A state that hits its budget saves the city it stopped at in rotation; the next run starts there, and once a run passes the end of the A-Z city list the cutoff moves to the day that pass began. last_fetch_date is the oldest state cutoff, kept for older readers.",
+  "last_run": {
+    "TX": {
+      "since": "2026-10-05",
+      "pages": 750,
+      "complete": false,
+      "stopped_at": "Southlake",
+      "added": 2558,
+      "removed": 0,
+      "updated": 3051,
+      "rechecked": 3053,
+      "left_off_old_cut": 14895
+    }
+  }
 }
