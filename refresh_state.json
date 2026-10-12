@@ -1,52 +1,52 @@
 {
   "timezone": "America/New_York",
   "cutoffs": {
-    "FL": "2026-10-11",
-    "TX": "2026-10-10",
-    "CO": "2026-10-11"
+    "FL": "2026-10-12",
+    "TX": "2026-10-11",
+    "CO": "2026-10-12"
   },
   "rotation": {
     "TX": {
-      "resume_city": "Murphy",
-      "cycle_start": "2026-10-11"
+      "resume_city": "Longview",
+      "cycle_start": "2026-10-12"
     }
   },
-  "last_fetch": "2026-10-11T07:28:23-04:00",
-  "last_fetch_date": "2026-10-10",
+  "last_fetch": "2026-10-12T07:35:19-04:00",
+  "last_fetch_date": "2026-10-11",
   "rule": "refresh.py adds a new home only when its latest Zillow price cut is dated on or after that state's date in cutoffs. A state's cutoff moves to today when a written run checks every city in that state without hitting its own page budget. A state that hits its budget saves the city it stopped at in rotation; the next run starts there, and once a run passes the end of the A-Z city list the cutoff moves to the day that pass began. last_fetch_date is the oldest state cutoff, kept for older readers.",
   "last_run": {
     "FL": {
-      "since": "2026-10-10",
-      "pages": 219,
+      "since": "2026-10-11",
+      "pages": 218,
       "complete": true,
       "stopped_at": null,
-      "added": 145,
+      "added": 127,
       "removed": 0,
-      "updated": 2606,
-      "rechecked": 2608,
-      "left_off_old_cut": 5293
+      "updated": 2674,
+      "rechecked": 2674,
+      "left_off_old_cut": 5219
     },
     "TX": {
-      "since": "2026-10-09",
+      "since": "2026-10-10",
       "pages": 750,
       "complete": false,
-      "stopped_at": "Murphy",
-      "added": 593,
+      "stopped_at": "Longview",
+      "added": 298,
       "removed": 0,
-      "updated": 6432,
-      "rechecked": 6448,
-      "left_off_old_cut": 13810
+      "updated": 6738,
+      "rechecked": 6741,
+      "left_off_old_cut": 12996
     },
     "CO": {
-      "since": "2026-10-10",
-      "pages": 148,
+      "since": "2026-10-11",
+      "pages": 145,
       "complete": true,
       "stopped_at": null,
-      "added": 53,
+      "added": 29,
       "removed": 0,
-      "updated": 4538,
-      "rechecked": 4542,
-      "left_off_old_cut": 247
+      "updated": 4477,
+      "rechecked": 4478,
+      "left_off_old_cut": 265
     }
   }
 }
